@@ -8,6 +8,7 @@ import { SongsScreen } from '../screens/SongsScreen';
 import { EventsScreen } from '../screens/EventsScreen';
 import { ControlScreen } from '../screens/ControlScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { DisplaysNavigator } from './DisplaysNavigator';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -18,6 +19,7 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   Songs: undefined;
   Events: undefined;
+  Displays: undefined;
   Settings: undefined;
 };
 
@@ -29,6 +31,11 @@ function MainTabs() {
     <Tab.Navigator>
       <Tab.Screen name="Songs" component={SongsScreen} />
       <Tab.Screen name="Events" component={EventsScreen} />
+      <Tab.Screen
+        name="Displays"
+        component={DisplaysNavigator}
+        options={{ headerShown: false }}
+      />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
