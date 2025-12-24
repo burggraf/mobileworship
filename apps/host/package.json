@@ -20,6 +20,7 @@
     "nativewind": "^2.0.0",
     "react": "18.2.0",
     "react-native": "0.74.0",
+    "react-native-keep-awake": "^4.0.0",
     "react-native-qrcode-svg": "^6.3.21",
     "react-native-svg": "^15.15.1",
     "react-native-video": "^6.1.0",
