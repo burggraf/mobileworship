@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { DashboardLayout } from './pages/DashboardLayout';
 import { SongsPage } from './pages/SongsPage';
+import { SongDetailPage } from './pages/SongDetailPage';
 import { EventsPage } from './pages/EventsPage';
 import { MediaPage } from './pages/MediaPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -39,6 +40,7 @@ export function App() {
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<SongsPage />} />
                 <Route path="songs" element={<SongsPage />} />
+                <Route path="songs/:id" element={<SongDetailPage />} />
                 <Route path="events" element={<EventsPage />} />
                 <Route path="media" element={<MediaPage />} />
                 <Route path="settings" element={<SettingsPage />} />

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSongs, useAuth } from '@mobileworship/shared';
 import { CreateSongModal } from '../components/CreateSongModal';
 
@@ -32,9 +33,10 @@ export function SongsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {songs.map((song) => (
-            <div
+            <Link
               key={song.id}
-              className="p-4 border dark:border-gray-700 rounded-lg hover:border-primary-500 transition"
+              to={`/dashboard/songs/${song.id}`}
+              className="p-4 border dark:border-gray-700 rounded-lg hover:border-primary-500 transition block"
             >
               <h3 className="font-semibold">{song.title}</h3>
               {song.author && (
@@ -52,7 +54,7 @@ export function SongsPage() {
                   ))}
                 </div>
               )}
-            </div>
+            </Link>
           ))}
         </div>
       )}
