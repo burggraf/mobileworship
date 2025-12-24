@@ -7,3 +7,5 @@ export { useEvents } from './useEvents';
 export { useMedia } from './useMedia';
 export { useRealtime } from './useRealtime';
 export type { PresentationState } from './useRealtime';
+export { useDisplays, isDisplayOnline } from './useDisplays';
+export { useDisplay } from './useDisplay';
