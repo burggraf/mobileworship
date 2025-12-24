@@ -45,65 +45,67 @@ function parseHymnList(html: string): string[] {
 }
 
 function parseHymnPage(html: string, sourceUrl: string): ScrapedHymn | null {
+  // Extract title from <title> tag
   const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
   const title = titleMatch?.[1]?.replace(/\s*[-|].*$/, '').trim() || 'Unknown';
 
-  const authorMatch = html.match(/(?:Lyrics|Words)[:\s]*([^<\n]+)/i);
-  const author = authorMatch?.[1]?.trim().replace(/^by\s+/i, '') || null;
+  // Extract author from <a> tag after "Lyrics:" header
+  const authorMatch = html.match(/Lyrics:<\/th>\s*<td[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i) ||
+                      html.match(/Words:<\/th>\s*<td[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i);
+  const author = authorMatch?.[1]?.trim() || null;
 
-  const composerMatch = html.match(/(?:Music|Tune)[:\s]*([^<\n]+)/i);
+  // Extract composer from <a> tag after "Music:" header
+  const composerMatch = html.match(/Music:<\/th>\s*<td[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i) ||
+                        html.match(/Tune:<\/th>\s*<td[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i);
   const composer = composerMatch?.[1]?.trim() || null;
 
-  const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-  if (!bodyMatch) return null;
+  // Extract lyrics from <div ID="Lyrics"> section
+  const lyricsDiv = html.match(/<div[^>]*ID="Lyrics"[^>]*>([\s\S]*?)<\/div>/i);
+  if (!lyricsDiv) return null;
 
-  let content = bodyMatch[1]
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&');
+  let content = lyricsDiv[1];
+  // Skip title and author lines at start (w3-center class)
+  content = content.replace(/<p[^>]*class="[^"]*w3-center[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '');
+  // Convert <br> to newlines
+  content = content.replace(/<br\s*\/?>/gi, '\n');
+  // Add verse separator between </p> and <p>
+  content = content.replace(/<\/p>\s*<p>/gi, '\n\nVERSE_BREAK\n\n');
+  // Remove remaining HTML tags
+  content = content.replace(/<[^>]+>/g, '');
+  // Decode HTML entities
+  content = content.replace(/&nbsp;/g, ' ');
+  content = content.replace(/&amp;/g, '&');
+  content = content.replace(/&lt;/g, '<');
+  content = content.replace(/&gt;/g, '>');
+  content = content.replace(/&quot;/g, '"');
+  content = content.replace(/&apos;/g, "'");
+  content = content.replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(parseInt(code)));
+  content = content.replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
 
-  const lines = content.split('\n').map(l => l.trim()).filter(l => l);
-  let inLyrics = false;
-  const lyricLines: string[] = [];
-
-  for (const line of lines) {
-    if (/^[1IVX][\.\)]/.test(line)) inLyrics = true;
-    if (/copyright|public domain|hymns to god/i.test(line) && inLyrics) break;
-    if (inLyrics) lyricLines.push(line);
-  }
-
-  if (lyricLines.length === 0) return null;
-
-  // Format to markdown
+  // Process verses - split by VERSE_BREAK and format
+  const verses = content.split('VERSE_BREAK').map(v => v.trim()).filter(v => v);
   const sections: string[] = [];
-  let currentSection: string[] = [];
-  let verseNum = 0;
+  let verseNum = 1;
 
-  for (const line of lyricLines) {
-    if (/^(\d+)[.\)]$/.test(line)) {
-      if (currentSection.length > 0) {
-        sections.push(`# Verse ${verseNum}\n${currentSection.join('\n')}`);
+  for (const verse of verses) {
+    // Check if this is a Refrain/Chorus marker
+    if (/^(refrain|chorus)$/i.test(verse.trim())) {
+      sections.push('# Chorus');
+    } else if (verse.trim()) {
+      const prevWasChorusMarker = sections.length > 0 &&
+        /^# (refrain|chorus)$/i.test(sections[sections.length - 1]);
+
+      if (prevWasChorusMarker) {
+        // This is the chorus content
+        sections[sections.length - 1] = `# Chorus\n${verse}`;
+      } else {
+        sections.push(`# Verse ${verseNum}\n${verse}`);
+        verseNum++;
       }
-      verseNum = parseInt(line);
-      currentSection = [];
-    } else if (/^chorus/i.test(line)) {
-      if (currentSection.length > 0) {
-        sections.push(`# Verse ${verseNum}\n${currentSection.join('\n')}`);
-      }
-      currentSection = [];
-      verseNum = 0;
-    } else {
-      currentSection.push(line);
     }
   }
-  if (currentSection.length > 0) {
-    const header = verseNum > 0 ? `Verse ${verseNum}` : 'Chorus';
-    sections.push(`# ${header}\n${currentSection.join('\n')}`);
-  }
+
+  if (sections.length === 0) return null;
 
   const lyrics = `---
 source: hymnstogod.org
@@ -122,38 +124,46 @@ Deno.serve(async (req: Request) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    // Check for service role key authentication (for batch imports)
+    const isServiceRoleAuth = authHeader === `Bearer ${serviceRoleKey}`;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!isServiceRoleAuth) {
+      // Fall back to user-based admin authentication
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-    const { data: userData } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
 
-    if (userData?.role !== "admin") {
-      return new Response(JSON.stringify({ error: "Admin access required" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: userData } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (userData?.role !== "admin") {
+        return new Response(JSON.stringify({ error: "Admin access required" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const { limit, dryRun }: ImportRequest = await req.json().catch(() => ({}));
