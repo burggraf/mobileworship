@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useEvents, useAuth } from '@mobileworship/shared';
+import { CreateEventModal } from '../components/CreateEventModal';
 
 export function EventsPage() {
-  const { events, isLoading, createEvent } = useEvents();
+  const { events, isLoading } = useEvents();
   const { can } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
 
@@ -57,8 +58,8 @@ export function EventsPage() {
                 )}
               </div>
               <div className="flex items-center gap-4">
-                <span className={`px-2 py-1 text-xs rounded ${statusColors[event.status]}`}>
-                  {event.status}
+                <span className={`px-2 py-1 text-xs rounded ${statusColors[event.status || 'draft']}`}>
+                  {event.status || 'draft'}
                 </span>
                 {can('control:operate') && event.status !== 'completed' && (
                   <Link
@@ -74,7 +75,7 @@ export function EventsPage() {
         </div>
       )}
 
-      {/* TODO: Add CreateEventModal component */}
+      <CreateEventModal isOpen={showCreate} onClose={() => setShowCreate(false)} />
     </div>
   );
 }

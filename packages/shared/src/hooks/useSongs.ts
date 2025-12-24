@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSupabase } from './useSupabase';
 import { useAuth } from './useAuth';
-import type { SongContent } from '../types';
+import type { SongContent, Database } from '../types';
 
 export function useSongs() {
   const supabase = useSupabase();
@@ -37,7 +37,7 @@ export function useSongs() {
           church_id: user.churchId,
           title: song.title,
           author: song.author,
-          content: song.content,
+          content: song.content as unknown as Database['public']['Tables']['songs']['Insert']['content'],
           ccli_song_id: song.ccliSongId,
         })
         .select()
@@ -68,7 +68,7 @@ export function useSongs() {
         .update({
           title: updates.title,
           author: updates.author,
-          content: updates.content,
+          content: updates.content as unknown as Database['public']['Tables']['songs']['Update']['content'],
           default_background_id: updates.defaultBackgroundId,
           transition_type: updates.transitionType,
           tags: updates.tags,

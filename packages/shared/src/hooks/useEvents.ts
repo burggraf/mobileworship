@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSupabase } from './useSupabase';
 import { useAuth } from './useAuth';
-import type { EventItem } from '../types';
+import type { EventItem, Database } from '../types';
 
 export function useEvents() {
   const supabase = useSupabase();
@@ -32,7 +32,7 @@ export function useEvents() {
           church_id: user.churchId,
           title: event.title,
           scheduled_at: event.scheduledAt,
-          items: event.items ?? [],
+          items: (event.items ?? []) as unknown as Database['public']['Tables']['events']['Insert']['items'],
           status: 'draft',
         })
         .select()
@@ -61,7 +61,7 @@ export function useEvents() {
         .update({
           title: updates.title,
           scheduled_at: updates.scheduledAt,
-          items: updates.items,
+          items: updates.items as unknown as Database['public']['Tables']['events']['Update']['items'],
           status: updates.status,
         })
         .eq('id', id)
