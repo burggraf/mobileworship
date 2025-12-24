@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMedia, useAuth } from '@mobileworship/shared';
 
 export function MediaPage() {
+  const { t } = useTranslation();
   const { media, isLoading, uploadMedia, deleteMedia, getPublicUrl } = useMedia();
   const { can } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,7 +34,7 @@ export function MediaPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Media</h2>
+        <h2 className="text-2xl font-bold">{t('media.title')}</h2>
         {can('media:write') && (
           <>
             <input
@@ -47,7 +49,7 @@ export function MediaPage() {
               disabled={uploading}
               className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
             >
-              {uploading ? 'Uploading...' : 'Upload Media'}
+              {uploading ? t('media.uploading') : t('media.upload')}
             </button>
           </>
         )}
@@ -55,7 +57,7 @@ export function MediaPage() {
 
       {media.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          <p>No media yet. Upload backgrounds and videos to use in your services.</p>
+          <p>{t('media.noMedia')}</p>
         </div>
       ) : (
         <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -78,11 +80,11 @@ export function MediaPage() {
                   onClick={() => deleteMedia.mutate(item.id)}
                   className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded opacity-0 group-hover:opacity-100 transition"
                 >
-                  Delete
+                  {t('media.delete')}
                 </button>
               )}
               <span className="absolute bottom-2 left-2 px-2 py-0.5 text-xs bg-black/50 text-white rounded">
-                {item.type}
+                {t(`media.${item.type}`)}
               </span>
             </div>
           ))}

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@mobileworship/shared';
 
 export function SignupPage() {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [churchName, setChurchName] = useState('');
   const [email, setEmail] = useState('');
@@ -30,7 +32,7 @@ export function SignupPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-8 text-center">Get Started</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">{t('auth.createAccount')}</h1>
 
         {error && (
           <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
@@ -41,7 +43,7 @@ export function SignupPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-1">
-              Your Name
+              {t('auth.name')}
             </label>
             <input
               id="name"
@@ -55,7 +57,7 @@ export function SignupPage() {
 
           <div>
             <label htmlFor="churchName" className="block text-sm font-medium mb-1">
-              Church Name
+              {t('auth.churchName')}
             </label>
             <input
               id="churchName"
@@ -69,7 +71,7 @@ export function SignupPage() {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">
-              Email
+              {t('auth.email')}
             </label>
             <input
               id="email"
@@ -83,7 +85,7 @@ export function SignupPage() {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium mb-1">
-              Password
+              {t('auth.password')}
             </label>
             <input
               id="password"
@@ -101,14 +103,14 @@ export function SignupPage() {
             disabled={loading}
             className="w-full py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
           >
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? t('auth.signingUp') : t('auth.createAccount')}
           </button>
         </form>
 
         <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
-          Already have an account?{' '}
+          {t('auth.hasAccount')}{' '}
           <Link to="/login" className="text-primary-600 hover:underline">
-            Sign in
+            {t('auth.signIn')}
           </Link>
         </p>
       </div>

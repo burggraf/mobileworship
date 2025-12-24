@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@mobileworship/shared';
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +30,7 @@ export function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-8 text-center">Sign In</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">{t('auth.signIn')}</h1>
 
         {error && (
           <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
@@ -39,7 +41,7 @@ export function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">
-              Email
+              {t('auth.email')}
             </label>
             <input
               id="email"
@@ -53,7 +55,7 @@ export function LoginPage() {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium mb-1">
-              Password
+              {t('auth.password')}
             </label>
             <input
               id="password"
@@ -70,14 +72,14 @@ export function LoginPage() {
             disabled={loading}
             className="w-full py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('auth.signingIn') : t('auth.signIn')}
           </button>
         </form>
 
         <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
-          Don't have an account?{' '}
+          {t('auth.noAccount')}{' '}
           <Link to="/signup" className="text-primary-600 hover:underline">
-            Sign up
+            {t('auth.signUp')}
           </Link>
         </p>
       </div>

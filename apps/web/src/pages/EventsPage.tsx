@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEvents, useAuth } from '@mobileworship/shared';
 import { CreateEventModal } from '../components/CreateEventModal';
 
 export function EventsPage() {
+  const { t } = useTranslation();
   const { events, isLoading } = useEvents();
   const { can } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
@@ -22,20 +24,20 @@ export function EventsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Events</h2>
+        <h2 className="text-2xl font-bold">{t('events.title')}</h2>
         {can('events:write') && (
           <button
             onClick={() => setShowCreate(true)}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
           >
-            Create Event
+            {t('events.createEvent')}
           </button>
         )}
       </div>
 
       {events.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          <p>No events yet. Create your first service to get started.</p>
+          <p>{t('events.noEvents')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -61,7 +63,7 @@ export function EventsPage() {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className={`px-2 py-1 text-xs rounded ${statusColors[event.status || 'draft']}`}>
-                    {event.status || 'draft'}
+                    {t(`events.status.${event.status || 'draft'}`)}
                   </span>
                   {can('control:operate') && event.status !== 'completed' && (
                     <Link
@@ -69,7 +71,7 @@ export function EventsPage() {
                       onClick={(e) => e.stopPropagation()}
                       className="px-4 py-2 bg-primary-600 text-white text-sm rounded hover:bg-primary-700 transition"
                     >
-                      Control
+                      {t('events.control')}
                     </Link>
                   )}
                 </div>

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useSongs, useAuth } from '@mobileworship/shared';
 import { CreateSongModal } from '../components/CreateSongModal';
 
 export function SongsPage() {
+  const { t } = useTranslation();
   const { songs, isLoading } = useSongs();
   const { can } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
@@ -31,20 +33,20 @@ export function SongsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Songs</h2>
+        <h2 className="text-2xl font-bold">{t('songs.title')}</h2>
         {can('songs:write') && (
           <button
             onClick={() => setShowCreate(true)}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
           >
-            Add Song
+            {t('songs.addSong')}
           </button>
         )}
       </div>
 
       {songs.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          <p>No songs yet. Add your first song to get started.</p>
+          <p>{t('songs.noSongs')}</p>
         </div>
       ) : (
         <>
@@ -52,7 +54,7 @@ export function SongsPage() {
           <div className="flex gap-4 mb-4">
             <input
               type="text"
-              placeholder="Search songs..."
+              placeholder={t('songs.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -62,7 +64,7 @@ export function SongsPage() {
               onChange={(e) => setSelectedTag(e.target.value || null)}
               className="px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
-              <option value="">All Tags</option>
+              <option value="">{t('songs.allTags')}</option>
               {allTags.map((tag) => (
                 <option key={tag} value={tag}>
                   {tag}
@@ -73,7 +75,7 @@ export function SongsPage() {
 
           {/* Filtered Count */}
           <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            Showing {filteredSongs.length} of {songs.length} songs
+            {t('songs.showing', { count: filteredSongs.length, total: songs.length })}
           </div>
 
           {/* Song Grid */}
