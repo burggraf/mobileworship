@@ -13,6 +13,7 @@
     "clean": "turbo clean && rm -rf node_modules",
     "db:migrate": "supabase db push",
     "db:types": "supabase gen types typescript --linked > packages/shared/src/types/database.ts",
+    "secrets:push": "grep -v '^#' .env.secrets | grep -v '^$' | xargs supabase secrets set",
     "deploy": "turbo build && cd apps/web && npx wrangler pages deploy dist --project-name=mobileworship",
     "deploy:preview": "turbo build && cd apps/web && npx wrangler pages deploy dist --project-name=mobileworship --branch=preview"
   },
