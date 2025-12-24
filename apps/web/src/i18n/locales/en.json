@@ -201,6 +201,24 @@
     "delete": "Delete",
     "image": "image",
     "video": "video",
+    "tabs": {
+      "myMedia": "My Media",
+      "freeBackgrounds": "Free Backgrounds"
+    },
+    "backgrounds": {
+      "searchPlaceholder": "Search backgrounds...",
+      "search": "Search",
+      "import": "Import to Library",
+      "importing": "Importing...",
+      "noResults": "No backgrounds found for '{{query}}'. Try another search term.",
+      "rateLimited": "Too many requests. Try another source or wait a moment.",
+      "importError": "Failed to import background. Please try again.",
+      "importSuccess": "Background imported successfully!",
+      "photoBy": "Photo by {{name}} on {{source}}",
+      "loadMore": "Load More",
+      "preview": "Preview",
+      "suggestedSearches": "Suggested searches"
+    },
     "picker": {
       "title": "Select Background Media",
       "noMedia": "No media available",
