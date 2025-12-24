@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useSupabase } from './useSupabase';
-import type { EventItem, SongContent } from '../types';
+import type { EventItem, ParsedSong } from '../types';
 
 export interface PresentationState {
   eventId: string;
@@ -13,7 +13,7 @@ export interface PresentationState {
 interface UseRealtimeOptions {
   eventId: string;
   items: EventItem[];
-  songs: Map<string, SongContent>;
+  songs: Map<string, ParsedSong>;
 }
 
 export function useRealtime({ eventId, items, songs }: UseRealtimeOptions) {
@@ -51,17 +51,17 @@ export function useRealtime({ eventId, items, songs }: UseRealtimeOptions) {
     const item = getCurrentItem();
     if (!item || item.type !== 'song') return [];
 
-    const songContent = songs.get(item.id);
-    if (!songContent) return [];
+    const parsedSong = songs.get(item.id);
+    if (!parsedSong) return [];
 
-    // If arrangement is specified, use it to order sections
+    // If arrangement is specified, use it to order sections by label
     if (item.arrangement && item.arrangement.length > 0) {
       return item.arrangement
-        .map((idx) => songContent.sections[idx])
-        .filter(Boolean);
+        .map((label) => parsedSong.sections.find((s) => s.label === label))
+        .filter((s): s is typeof parsedSong.sections[0] => s !== undefined);
     }
 
-    return songContent.sections;
+    return parsedSong.sections;
   }, [getCurrentItem, songs]);
 
   // Navigation functions
@@ -108,11 +108,13 @@ export function useRealtime({ eventId, items, songs }: UseRealtimeOptions) {
           // Get sections of previous item
           const prevItem = items[newItemIndex];
           if (prevItem && prevItem.type === 'song') {
-            const songContent = songs.get(prevItem.id);
-            if (songContent) {
+            const parsedSong = songs.get(prevItem.id);
+            if (parsedSong) {
               const sections = prevItem.arrangement && prevItem.arrangement.length > 0
-                ? prevItem.arrangement.map((idx) => songContent.sections[idx]).filter(Boolean)
-                : songContent.sections;
+                ? prevItem.arrangement
+                    .map((label) => parsedSong.sections.find((s) => s.label === label))
+                    .filter(Boolean)
+                : parsedSong.sections;
               newSectionIndex = Math.max(0, sections.length - 1);
             }
           } else {

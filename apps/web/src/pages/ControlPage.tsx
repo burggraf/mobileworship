@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { useAuth, useEvents, useSongs, useRealtime } from '@mobileworship/shared';
-import type { EventItem, SongContent } from '@mobileworship/shared';
+import { useAuth, useEvents, useSongs, useRealtime, parseSongMarkdown } from '@mobileworship/shared';
+import type { EventItem, ParsedSong } from '@mobileworship/shared';
 
 export function ControlPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -20,12 +20,12 @@ export function ControlPage() {
     return (event.items as unknown as EventItem[]) || [];
   }, [event]);
 
-  // Create a map of song ID to song content for quick lookup
+  // Create a map of song ID to parsed song for quick lookup
   const songsMap = useMemo(() => {
-    const map = new Map<string, SongContent>();
+    const map = new Map<string, ParsedSong>();
     songs.forEach((song) => {
-      if (song.content) {
-        map.set(song.id, song.content as unknown as SongContent);
+      if (song.lyrics) {
+        map.set(song.id, parseSongMarkdown(song.lyrics));
       }
     });
     return map;

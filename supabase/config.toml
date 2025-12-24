@@ -35,5 +35,14 @@ enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
 
-[functions]
+[functions.ai-format-lyrics]
+verify_jwt = false
+
+[functions.ai-scripture]
+verify_jwt = false
+
+[functions.ccli-import]
 verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false

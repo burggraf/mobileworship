@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSupabase, useEvents, useSongs, useMedia } from '@mobileworship/shared';
-import type { PresentationState, EventItem, SongContent, SongSection } from '@mobileworship/shared';
+import { useSupabase, useEvents, useSongs, useMedia, parseSongMarkdown } from '@mobileworship/shared';
+import type { PresentationState, EventItem, ParsedSong, SongSection } from '@mobileworship/shared';
 
 export function PresentationPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -28,12 +28,12 @@ export function PresentationPage() {
     return (event.items as unknown as EventItem[]) || [];
   }, [event]);
 
-  // Create a map of song ID to song content for quick lookup
+  // Create a map of song ID to parsed song for quick lookup
   const songsMap = useMemo(() => {
-    const map = new Map<string, SongContent>();
+    const map = new Map<string, ParsedSong>();
     songs.forEach((song) => {
-      if (song.content) {
-        map.set(song.id, song.content as unknown as SongContent);
+      if (song.lyrics) {
+        map.set(song.id, parseSongMarkdown(song.lyrics));
       }
     });
     return map;
@@ -48,17 +48,17 @@ export function PresentationPage() {
   const currentSections = useMemo((): SongSection[] => {
     if (!currentItem || currentItem.type !== 'song') return [];
 
-    const songContent = songsMap.get(currentItem.id);
-    if (!songContent) return [];
+    const parsedSong = songsMap.get(currentItem.id);
+    if (!parsedSong) return [];
 
-    // If arrangement is specified, use it to order sections
+    // If arrangement is specified, use it to order sections by label
     if (currentItem.arrangement && currentItem.arrangement.length > 0) {
       return currentItem.arrangement
-        .map((idx) => songContent.sections[idx])
-        .filter(Boolean);
+        .map((label) => parsedSong.sections.find((s) => s.label === label))
+        .filter((s): s is SongSection => s !== undefined);
     }
 
-    return songContent.sections;
+    return parsedSong.sections;
   }, [currentItem, songsMap]);
 
   const currentSection = useMemo(() => {
