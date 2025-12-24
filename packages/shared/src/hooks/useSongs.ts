@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSupabase } from './useSupabase';
 import { useAuth } from './useAuth';
-import type { SongContent, Database } from '../types';
 
 export function useSongs() {
   const supabase = useSupabase();
@@ -27,8 +26,11 @@ export function useSongs() {
     mutationFn: async (song: {
       title: string;
       author?: string;
-      content: SongContent;
+      lyrics: string;
       ccliSongId?: string;
+      key?: string;
+      tempo?: number;
+      tags?: string[];
     }) => {
       if (!user?.churchId) throw new Error('Not authenticated');
       const { data, error } = await supabase
@@ -37,8 +39,11 @@ export function useSongs() {
           church_id: user.churchId,
           title: song.title,
           author: song.author,
-          content: song.content as unknown as Database['public']['Tables']['songs']['Insert']['content'],
+          lyrics: song.lyrics,
           ccli_song_id: song.ccliSongId,
+          key: song.key,
+          tempo: song.tempo,
+          tags: song.tags,
         })
         .select()
         .single();
@@ -58,20 +63,26 @@ export function useSongs() {
       id: string;
       title?: string;
       author?: string;
-      content?: SongContent;
+      lyrics?: string;
+      key?: string;
+      tempo?: number;
       defaultBackgroundId?: string;
       transitionType?: string;
       tags?: string[];
+      defaultArrangement?: string[];
     }) => {
       const { data, error } = await supabase
         .from('songs')
         .update({
           title: updates.title,
           author: updates.author,
-          content: updates.content as unknown as Database['public']['Tables']['songs']['Update']['content'],
+          lyrics: updates.lyrics,
+          key: updates.key,
+          tempo: updates.tempo,
           default_background_id: updates.defaultBackgroundId,
           transition_type: updates.transitionType,
           tags: updates.tags,
+          default_arrangement: updates.defaultArrangement,
         })
         .eq('id', id)
         .select()
