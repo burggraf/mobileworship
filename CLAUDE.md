@@ -72,6 +72,22 @@ All tables have `church_id` with Row-Level Security policies. Users are scoped t
 ### Offline Mode
 Events cache locally when loaded. Services run fully offline once cached.
 
+### Theming (Light/Dark Mode)
+All screens must support both light and dark mode. Use the `useTheme` hook from `apps/web/src/contexts/ThemeContext.tsx`:
+- Use Tailwind's `dark:` variant for dark mode styles (e.g., `bg-white dark:bg-gray-900`)
+- Theme preference is stored in localStorage and falls back to system preference
+- Toggle available via `toggleTheme()` or set explicitly via `setTheme('light' | 'dark')`
+
+### Internationalization (i18n)
+All screens must support English and Spanish translations. Use react-i18next:
+- Import `useTranslation` from `react-i18next`
+- Access translations via `const { t } = useTranslation()`
+- Add all user-facing strings to both locale files:
+  - `apps/web/src/i18n/locales/en.json` (English)
+  - `apps/web/src/i18n/locales/es.json` (Spanish)
+- Language detection uses localStorage, then browser preference, with English fallback
+- Never hardcode user-facing text directly in components
+
 ## Key Files
 
 - `packages/shared/src/types/` - TypeScript types (database.ts generated from Supabase)
