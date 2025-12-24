@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useSongs, useAuth } from '@mobileworship/shared';
+import { useSongs, useAuth, useMedia } from '@mobileworship/shared';
 import type { SongContent } from '@mobileworship/shared';
 import { SongEditor } from '../components/SongEditor';
+import { MediaPicker } from '../components/MediaPicker';
 
 export function SongDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { songs, updateSong, deleteSong } = useSongs();
   const { can } = useAuth();
+  const { media, getPublicUrl } = useMedia();
 
   // Find the song
   const song = songs.find((s) => s.id === id);
@@ -17,8 +19,10 @@ export function SongDetailPage() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [content, setContent] = useState<SongContent>({ sections: [] });
+  const [backgroundId, setBackgroundId] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 
   // Initialize state when song loads
   useEffect(() => {
@@ -26,6 +30,7 @@ export function SongDetailPage() {
       setTitle(song.title);
       setAuthor(song.author || '');
       setContent((song.content as unknown) as SongContent);
+      setBackgroundId(song.default_background_id || null);
       setHasChanges(false);
     }
   }, [song]);
@@ -36,8 +41,9 @@ export function SongDetailPage() {
     const titleChanged = title !== song.title;
     const authorChanged = author !== (song.author || '');
     const contentChanged = JSON.stringify(content) !== JSON.stringify(song.content);
-    setHasChanges(titleChanged || authorChanged || contentChanged);
-  }, [title, author, content, song]);
+    const backgroundChanged = backgroundId !== (song.default_background_id || null);
+    setHasChanges(titleChanged || authorChanged || contentChanged || backgroundChanged);
+  }, [title, author, content, backgroundId, song]);
 
   if (!song) {
     return (
@@ -74,6 +80,7 @@ export function SongDetailPage() {
         title: title.trim(),
         author: author.trim() || undefined,
         content,
+        defaultBackgroundId: backgroundId || undefined,
       });
       setHasChanges(false);
     } catch (err) {
@@ -179,6 +186,70 @@ export function SongDetailPage() {
           />
         </div>
 
+        {/* Background Section */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Background</label>
+          <div className="flex items-start gap-4">
+            {backgroundId ? (
+              <div className="relative w-48 aspect-video rounded-lg overflow-hidden border dark:border-gray-700">
+                {(() => {
+                  const backgroundMedia = media.find((m) => m.id === backgroundId);
+                  if (!backgroundMedia) {
+                    return (
+                      <div className="w-full h-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                        <span className="text-gray-400 text-sm">Media not found</span>
+                      </div>
+                    );
+                  }
+                  const publicUrl = getPublicUrl(backgroundMedia.storage_path);
+                  return backgroundMedia.type === 'image' ? (
+                    <img
+                      src={publicUrl}
+                      alt="Background preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="relative w-full h-full bg-gray-900">
+                      <video
+                        src={publicUrl}
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <svg
+                          className="h-8 w-8 text-white opacity-80"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              <div className="w-48 aspect-video rounded-lg bg-gray-100 dark:bg-gray-900 border dark:border-gray-700 flex items-center justify-center">
+                <span className="text-gray-400 text-sm">No background</span>
+              </div>
+            )}
+            <div className="flex-1">
+              <button
+                onClick={() => setIsMediaPickerOpen(true)}
+                disabled={!canEdit || isSaving || isDeleting}
+                className="px-4 py-2 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Change Background
+              </button>
+              {backgroundId && (
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  Click to select a different background or remove the current one
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Lyrics Editor */}
         <div>
           <label className="block text-sm font-medium mb-2">Lyrics</label>
@@ -189,6 +260,14 @@ export function SongDetailPage() {
           />
         </div>
       </div>
+
+      {/* Media Picker Modal */}
+      <MediaPicker
+        isOpen={isMediaPickerOpen}
+        onClose={() => setIsMediaPickerOpen(false)}
+        onSelect={setBackgroundId}
+        selectedId={backgroundId || undefined}
+      />
     </div>
   );
 }
