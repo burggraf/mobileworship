@@ -14,6 +14,7 @@ import { MediaPage } from './pages/MediaPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ControlPage } from './pages/ControlPage';
 import { PresentationPage } from './pages/PresentationPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -35,22 +36,24 @@ export function App() {
       <SupabaseProvider supabaseUrl={supabaseUrl} supabaseAnonKey={supabaseAnonKey}>
         <AuthProvider>
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/dashboard" element={<DashboardLayout />}>
-                <Route index element={<SongsPage />} />
-                <Route path="songs" element={<SongsPage />} />
-                <Route path="songs/:id" element={<SongDetailPage />} />
-                <Route path="events" element={<EventsPage />} />
-                <Route path="events/:id" element={<EventDetailPage />} />
-                <Route path="media" element={<MediaPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
-              <Route path="/control/:eventId" element={<ControlPage />} />
-              <Route path="/present/:eventId" element={<PresentationPage />} />
-            </Routes>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route index element={<SongsPage />} />
+                  <Route path="songs" element={<SongsPage />} />
+                  <Route path="songs/:id" element={<SongDetailPage />} />
+                  <Route path="events" element={<EventsPage />} />
+                  <Route path="events/:id" element={<EventDetailPage />} />
+                  <Route path="media" element={<MediaPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                </Route>
+                <Route path="/control/:eventId" element={<ControlPage />} />
+                <Route path="/present/:eventId" element={<PresentationPage />} />
+              </Routes>
+            </ErrorBoundary>
           </BrowserRouter>
         </AuthProvider>
       </SupabaseProvider>
