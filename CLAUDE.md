@@ -69,6 +69,33 @@ All tables have `church_id` with Row-Level Security policies. Users are scoped t
 - **Editor**: CRUD songs, media, events; live control
 - **Operator**: Read-only library access; live control only
 
+### Host App (Display)
+The host app runs on display devices (Android TV, Windows, macOS) and shows worship lyrics.
+
+**Pairing Flow:**
+1. Host shows QR code + 6-digit numeric code
+2. Client app scans/enters code to claim display
+3. Display is persistently linked to church
+
+**Communication:**
+- Primary: Supabase Realtime channels
+- Host subscribes to `display:{display_id}` channel
+- Client sends commands, host broadcasts state
+
+**Display Settings:**
+- fontSize: small/medium/large/xlarge
+- textPosition: center/bottom/lower-third
+- margins: configurable per-edge
+- fontFamily: system/serif/sans-serif
+- textShadow: boolean
+- overlayOpacity: 0-1
+
+**Commands:**
+- LOAD_EVENT / UNLOAD_EVENT
+- GOTO_SLIDE / NEXT_SLIDE / PREV_SLIDE
+- BLANK_SCREEN / SHOW_LOGO / UNBLANK
+- SET_TRANSITION / UPDATE_SETTINGS
+
 ### Offline Mode
 Events cache locally when loaded. Services run fully offline once cached.
 
