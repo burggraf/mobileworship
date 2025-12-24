@@ -50,6 +50,69 @@ export type Database = {
         }
         Relationships: []
       }
+      displays: {
+        Row: {
+          church_id: string | null
+          created_at: string | null
+          default_background_id: string | null
+          device_info: Json | null
+          id: string
+          last_seen_at: string | null
+          location: string | null
+          name: string
+          paired_at: string | null
+          pairing_code: string | null
+          pairing_code_expires_at: string | null
+          settings: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          church_id?: string | null
+          created_at?: string | null
+          default_background_id?: string | null
+          device_info?: Json | null
+          id?: string
+          last_seen_at?: string | null
+          location?: string | null
+          name?: string
+          paired_at?: string | null
+          pairing_code?: string | null
+          pairing_code_expires_at?: string | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          church_id?: string | null
+          created_at?: string | null
+          default_background_id?: string | null
+          device_info?: Json | null
+          id?: string
+          last_seen_at?: string | null
+          location?: string | null
+          name?: string
+          paired_at?: string | null
+          pairing_code?: string | null
+          pairing_code_expires_at?: string | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "displays_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "displays_default_background_id_fkey"
+            columns: ["default_background_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           church_id: string
