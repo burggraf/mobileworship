@@ -9,6 +9,9 @@ export type {
   Slide,
 } from '../utils/markdown-song';
 
+// Re-export display types
+export * from './display';
+
 // Domain types
 export type Role = 'admin' | 'editor' | 'operator';
 
