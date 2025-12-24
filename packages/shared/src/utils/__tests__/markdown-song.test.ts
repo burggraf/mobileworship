@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSongMarkdown } from '../markdown-song';
+import { parseSongMarkdown, buildSongMarkdown, type ParsedSong } from '../markdown-song';
 
 describe('parseSongMarkdown', () => {
   it('parses minimal song with just title', () => {
@@ -159,5 +159,57 @@ The chorus`;
     expect(result.sections).toHaveLength(2);
     expect(result.sections[0].lines).toEqual(['First verse']);
     expect(result.sections[1].lines).toEqual(['The chorus']);
+  });
+});
+
+describe('buildSongMarkdown', () => {
+  it('builds markdown from parsed song', () => {
+    const song: ParsedSong = {
+      metadata: {
+        title: 'Test Song',
+        author: 'Test Author',
+        key: 'G',
+      },
+      sections: [
+        { type: 'Verse', label: 'Verse 1', lines: ['Line one', 'Line two'] },
+        { type: 'Chorus', label: 'Chorus', lines: ['Chorus line'] },
+      ],
+    };
+
+    const markdown = buildSongMarkdown(song);
+
+    expect(markdown).toContain('title: Test Song');
+    expect(markdown).toContain('author: Test Author');
+    expect(markdown).toContain('key: G');
+    expect(markdown).toContain('# Verse');
+    expect(markdown).toContain('Line one');
+    expect(markdown).toContain('# Chorus');
+  });
+
+  it('round-trips correctly', () => {
+    const original = `---
+title: Amazing Grace
+author: John Newton
+key: G
+tempo: 72
+tags: [hymn, grace]
+---
+
+# Verse
+Amazing grace how sweet the sound
+That saved a wretch like me
+
+# Chorus
+I once was lost but now am found
+Was blind but now I see`;
+
+    const parsed = parseSongMarkdown(original);
+    const rebuilt = buildSongMarkdown(parsed);
+    const reparsed = parseSongMarkdown(rebuilt);
+
+    expect(reparsed.metadata.title).toBe(parsed.metadata.title);
+    expect(reparsed.metadata.author).toBe(parsed.metadata.author);
+    expect(reparsed.sections.length).toBe(parsed.sections.length);
+    expect(reparsed.sections[0].lines).toEqual(parsed.sections[0].lines);
   });
 });

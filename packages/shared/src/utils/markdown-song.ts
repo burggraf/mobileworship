@@ -147,3 +147,52 @@ export function parseSongMarkdown(markdown: string): ParsedSong {
     sections,
   };
 }
+
+/**
+ * Build markdown string from structured song data
+ */
+export function buildSongMarkdown(song: ParsedSong): string {
+  const lines: string[] = [];
+
+  // Build frontmatter
+  lines.push('---');
+  lines.push(`title: ${song.metadata.title}`);
+
+  if (song.metadata.author) {
+    lines.push(`author: ${song.metadata.author}`);
+  }
+  if (song.metadata.ccli) {
+    lines.push(`ccli: ${song.metadata.ccli}`);
+  }
+  if (song.metadata.key) {
+    lines.push(`key: ${song.metadata.key}`);
+  }
+  if (song.metadata.tempo) {
+    lines.push(`tempo: ${song.metadata.tempo}`);
+  }
+  if (song.metadata.tags && song.metadata.tags.length > 0) {
+    lines.push(`tags: [${song.metadata.tags.join(', ')}]`);
+  }
+
+  // Add any custom fields
+  const knownFields = ['title', 'author', 'ccli', 'key', 'tempo', 'tags'];
+  for (const [key, value] of Object.entries(song.metadata)) {
+    if (!knownFields.includes(key) && value !== undefined) {
+      lines.push(`${key}: ${value}`);
+    }
+  }
+
+  lines.push('---');
+  lines.push('');
+
+  // Build sections
+  for (const section of song.sections) {
+    lines.push(`# ${section.type}`);
+    for (const line of section.lines) {
+      lines.push(line);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n').trim();
+}
