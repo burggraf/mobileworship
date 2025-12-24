@@ -1,21 +1,26 @@
 #!/usr/bin/env -S deno run --allow-net --allow-env --allow-read --allow-write
 
 /**
- * CLI script to import hymns from HymnsToGod.org into Supabase.
+ * CLI script to import hymns from various sources into Supabase.
  *
  * Usage:
  *   deno run --allow-net --allow-env --allow-read --allow-write scripts/import-hymns.ts [options]
  *
  * Options:
+ *   --source=SOURCE Source to import from: hymnstogod (default), pateys
  *   --limit=N       Only import first N hymns (for testing)
  *   --dry-run       Scrape and validate but don't insert to database
  *   --output=FILE   Write scraped data to JSON file
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { scrapeAllHymns, ScrapedHymn } from './lib/scraper.ts';
+import { scrapeAllHymns as scrapeHymnsToGod, ScrapedHymn } from './lib/scraper.ts';
+import { scrapeAllHymns as scrapePateys } from './lib/pateys-scraper.ts';
+
+type Source = 'hymnstogod' | 'pateys';
 
 interface ImportOptions {
+  source: Source;
   limit?: number;
   dryRun: boolean;
   outputFile?: string;
@@ -23,10 +28,18 @@ interface ImportOptions {
 
 function parseArgs(): ImportOptions {
   const args = Deno.args;
-  const options: ImportOptions = { dryRun: false };
+  const options: ImportOptions = { source: 'hymnstogod', dryRun: false };
 
   for (const arg of args) {
-    if (arg.startsWith('--limit=')) {
+    if (arg.startsWith('--source=')) {
+      const source = arg.split('=')[1].toLowerCase();
+      if (source === 'hymnstogod' || source === 'pateys') {
+        options.source = source;
+      } else {
+        console.error(`Unknown source: ${source}. Use 'hymnstogod' or 'pateys'.`);
+        Deno.exit(1);
+      }
+    } else if (arg.startsWith('--limit=')) {
       options.limit = parseInt(arg.split('=')[1]);
     } else if (arg === '--dry-run') {
       options.dryRun = true;
@@ -105,18 +118,27 @@ async function insertHymns(hymns: ScrapedHymn[]): Promise<{ inserted: number; sk
   return { inserted, skipped, errors };
 }
 
+const SOURCE_NAMES: Record<Source, string> = {
+  hymnstogod: 'HymnsToGod.org',
+  pateys: 'Pateys.nf.ca',
+};
+
 async function main() {
   await loadEnv();
   const options = parseArgs();
 
   console.log('🎵 Hymn Import Tool');
   console.log('==================');
+  console.log(`Source: ${SOURCE_NAMES[options.source]}`);
   console.log(`Mode: ${options.dryRun ? 'DRY RUN' : 'LIVE'}`);
   if (options.limit) console.log(`Limit: ${options.limit} hymns`);
   console.log('');
 
+  // Select scraper based on source
+  const scraper = options.source === 'pateys' ? scrapePateys : scrapeHymnsToGod;
+
   // Scrape hymns
-  const result = await scrapeAllHymns({
+  const result = await scraper({
     limit: options.limit,
     onProgress: (current, total, title) => {
       const pct = Math.round((current / total) * 100);
@@ -136,9 +158,11 @@ async function main() {
 
   // Show failures
   if (result.failed.length > 0) {
-    console.log('\nFailed URLs:');
-    for (const { url, error } of result.failed.slice(0, 10)) {
-      console.log(`  - ${url}: ${error}`);
+    console.log('\nFailed:');
+    for (const failure of result.failed.slice(0, 10)) {
+      // Handle both url and hymnNumber formats
+      const id = 'url' in failure ? failure.url : `#${(failure as { hymnNumber: number }).hymnNumber}`;
+      console.log(`  - ${id}: ${failure.error}`);
     }
     if (result.failed.length > 10) {
       console.log(`  ... and ${result.failed.length - 10} more`);
