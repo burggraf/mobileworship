@@ -13,6 +13,7 @@ import { EventDetailPage } from './pages/EventDetailPage';
 import { MediaPage } from './pages/MediaPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ControlPage } from './pages/ControlPage';
+import { PresentationPage } from './pages/PresentationPage';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -48,6 +49,7 @@ export function App() {
                 <Route path="settings" element={<SettingsPage />} />
               </Route>
               <Route path="/control/:eventId" element={<ControlPage />} />
+              <Route path="/present/:eventId" element={<PresentationPage />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>
