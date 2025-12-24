@@ -66,7 +66,7 @@ export function SongEditor({ content, onChange, readOnly = false }: SongEditorPr
     <div className="space-y-4">
       {content.sections.map((section, index) => (
         <div
-          key={index}
+          key={`${section.type}-${section.label}-${index}`}
           className="border dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50"
         >
           <div className="flex items-start gap-3 mb-3">
@@ -111,6 +111,7 @@ export function SongEditor({ content, onChange, readOnly = false }: SongEditorPr
                   disabled={index === 0}
                   className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Move up"
+                  aria-label="Move up"
                 >
                   <svg
                     className="w-5 h-5"
@@ -132,6 +133,7 @@ export function SongEditor({ content, onChange, readOnly = false }: SongEditorPr
                   disabled={index === content.sections.length - 1}
                   className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Move down"
+                  aria-label="Move down"
                 >
                   <svg
                     className="w-5 h-5"
@@ -152,6 +154,7 @@ export function SongEditor({ content, onChange, readOnly = false }: SongEditorPr
                   onClick={() => deleteSection(index)}
                   className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                   title="Delete section"
+                  aria-label="Delete section"
                 >
                   <svg
                     className="w-5 h-5"
