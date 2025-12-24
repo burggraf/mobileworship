@@ -8,7 +8,7 @@ export function SongsPage() {
   const [showCreate, setShowCreate] = useState(false);
 
   if (isLoading) {
-    return <div className="text-gray-500">Loading songs...</div>;
+    return <div role="status" className="text-gray-500">Loading songs...</div>;
   }
 
   return (

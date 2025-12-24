@@ -86,10 +86,19 @@ export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        role="dialog"
+        aria-labelledby="modal-title"
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && !createSong.isPending) {
+            onClose();
+          }
+        }}
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b dark:border-gray-700">
-          <h2 className="text-xl font-semibold">Create New Song</h2>
+          <h2 id="modal-title" className="text-xl font-semibold">Create New Song</h2>
         </div>
 
         {/* Form */}
@@ -159,7 +168,10 @@ export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
 
             {/* Error Display */}
             {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div
+                role="alert"
+                className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+              >
                 <p className="text-sm text-red-600 dark:text-red-400">
                   {error}
                 </p>
