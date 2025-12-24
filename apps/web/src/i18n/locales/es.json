@@ -1,0 +1,230 @@
+{
+  "app": {
+    "name": "Mobile Worship",
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "reload": "Recargar Página"
+  },
+  "nav": {
+    "songs": "Canciones",
+    "events": "Eventos",
+    "media": "Medios",
+    "settings": "Configuración",
+    "signOut": "Cerrar Sesión",
+    "back": "Volver"
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "signUp": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "name": "Nombre",
+    "churchName": "Nombre de la Iglesia",
+    "signingIn": "Iniciando sesión...",
+    "signingUp": "Registrándose...",
+    "noAccount": "¿No tienes una cuenta?",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "createAccount": "Crear Cuenta"
+  },
+  "home": {
+    "hero": {
+      "title": "Adoración Simplificada",
+      "subtitle": "Muestra letras, escrituras y medios para tu congregación con facilidad.",
+      "cta": "Comenzar"
+    },
+    "features": {
+      "title": "Todo lo que necesitas",
+      "songs": {
+        "title": "Biblioteca de Canciones",
+        "description": "Organiza tus canciones de adoración con secciones, tonos y arreglos."
+      },
+      "events": {
+        "title": "Planificación de Servicios",
+        "description": "Crea órdenes de servicio y coordina con tu equipo."
+      },
+      "live": {
+        "title": "Control en Vivo",
+        "description": "Controla presentaciones en tiempo real desde cualquier dispositivo."
+      }
+    }
+  },
+  "songs": {
+    "title": "Canciones",
+    "addSong": "Agregar Canción",
+    "searchPlaceholder": "Buscar canciones...",
+    "allTags": "Todas las Etiquetas",
+    "showing": "Mostrando {{count}} de {{total}} canciones",
+    "noSongs": "Aún no hay canciones. Agrega tu primera canción de adoración para comenzar.",
+    "noResults": "Ninguna canción coincide con tu búsqueda.",
+    "create": {
+      "title": "Agregar Nueva Canción",
+      "songTitle": "Título",
+      "author": "Autor",
+      "lyrics": "Letra",
+      "lyricsHint": "Separa las secciones con una línea en blanco",
+      "creating": "Creando...",
+      "create": "Crear Canción",
+      "cancel": "Cancelar"
+    },
+    "edit": {
+      "title": "Editar Canción",
+      "background": "Fondo",
+      "noBackground": "Sin fondo",
+      "changeBackground": "Cambiar Fondo",
+      "lyricsSection": "Letra",
+      "addSection": "+ Agregar Sección",
+      "saving": "Guardando...",
+      "save": "Guardar Cambios",
+      "delete": "Eliminar"
+    },
+    "sections": {
+      "type": "Tipo",
+      "label": "Etiqueta",
+      "lines": "Líneas",
+      "linesPlaceholder": "Ingresa las líneas de la letra (una por línea)",
+      "labelPlaceholder": "Etiqueta de sección",
+      "moveUp": "Mover arriba",
+      "moveDown": "Mover abajo",
+      "deleteSection": "Eliminar sección",
+      "verse": "verso",
+      "chorus": "coro",
+      "bridge": "puente",
+      "preChorus": "pre-coro",
+      "tag": "tag",
+      "intro": "intro",
+      "outro": "outro"
+    },
+    "backToSongs": "Volver a Canciones"
+  },
+  "events": {
+    "title": "Eventos",
+    "createEvent": "Crear Evento",
+    "noEvents": "Aún no hay eventos. Crea tu primer servicio para comenzar.",
+    "control": "Controlar",
+    "create": {
+      "title": "Crear Nuevo Evento",
+      "eventTitle": "Título",
+      "scheduledAt": "Fecha y Hora Programada",
+      "status": "Estado",
+      "creating": "Creando...",
+      "create": "Crear Evento",
+      "cancel": "Cancelar"
+    },
+    "edit": {
+      "title": "Detalles del Evento",
+      "saving": "Guardando...",
+      "save": "Guardar Cambios",
+      "delete": "Eliminar"
+    },
+    "status": {
+      "draft": "Borrador",
+      "ready": "Listo",
+      "live": "En Vivo",
+      "completed": "Completado"
+    },
+    "serviceOrder": {
+      "title": "Orden del Servicio",
+      "empty": "No hay elementos en el orden del servicio. Agrega canciones para comenzar.",
+      "selectSong": "Selecciona una canción para agregar...",
+      "addSong": "Agregar Canción",
+      "moveUp": "Mover arriba",
+      "moveDown": "Mover abajo",
+      "remove": "Eliminar"
+    },
+    "backToEvents": "Volver a Eventos"
+  },
+  "media": {
+    "title": "Medios",
+    "upload": "Subir Medio",
+    "uploading": "Subiendo...",
+    "noMedia": "Aún no hay medios. Sube fondos y videos para usar en tus servicios.",
+    "delete": "Eliminar",
+    "image": "imagen",
+    "video": "video",
+    "picker": {
+      "title": "Seleccionar Medio de Fondo",
+      "noMedia": "No hay medios disponibles",
+      "uploadHint": "Sube medios desde la Biblioteca de Medios para usar como fondos",
+      "none": "Ninguno",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar"
+    }
+  },
+  "control": {
+    "title": "Control en Vivo",
+    "connected": "Conectado",
+    "serviceOrder": "Orden del Servicio",
+    "sections": "Secciones",
+    "current": "Actual",
+    "next": "Siguiente",
+    "noSlide": "Ninguna diapositiva seleccionada",
+    "endOfService": "-",
+    "previous": "Anterior",
+    "blank": "Negro",
+    "screenBlank": "Pantalla en Negro"
+  },
+  "presentation": {
+    "loading": "Cargando presentación...",
+    "notFound": "Evento no encontrado",
+    "waitingForControl": "Esperando control..."
+  },
+  "settings": {
+    "title": "Configuración",
+    "profile": {
+      "title": "Perfil",
+      "name": "Nombre",
+      "email": "Correo Electrónico",
+      "role": "Rol"
+    },
+    "church": {
+      "title": "Configuración de la Iglesia",
+      "name": "Nombre de la Iglesia",
+      "ccli": "Número de Licencia CCLI",
+      "ccliPlaceholder": "ej., 123456",
+      "saving": "Guardando...",
+      "save": "Guardar Cambios"
+    },
+    "appearance": {
+      "title": "Apariencia",
+      "theme": "Tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "language": "Idioma"
+    },
+    "billing": {
+      "title": "Facturación",
+      "comingSoon": "Integración de facturación con Stripe próximamente..."
+    },
+    "integrations": {
+      "title": "Integraciones",
+      "ccli": {
+        "name": "CCLI",
+        "description": "Licencias y reportes de canciones"
+      },
+      "planningCenter": {
+        "name": "Planning Center",
+        "description": "Sincroniza canciones y servicios"
+      },
+      "connect": "Conectar"
+    },
+    "team": {
+      "title": "Miembros del Equipo",
+      "comingSoon": "Gestión de usuarios próximamente..."
+    }
+  },
+  "common": {
+    "required": "*",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "error": "Error",
+    "success": "Éxito",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No"
+  }
+}

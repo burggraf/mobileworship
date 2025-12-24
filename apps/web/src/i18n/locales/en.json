@@ -1,0 +1,230 @@
+{
+  "app": {
+    "name": "Mobile Worship",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "reload": "Reload Page"
+  },
+  "nav": {
+    "songs": "Songs",
+    "events": "Events",
+    "media": "Media",
+    "settings": "Settings",
+    "signOut": "Sign Out",
+    "back": "Back"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "churchName": "Church Name",
+    "signingIn": "Signing in...",
+    "signingUp": "Signing up...",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "createAccount": "Create Account"
+  },
+  "home": {
+    "hero": {
+      "title": "Worship Made Simple",
+      "subtitle": "Display lyrics, scriptures, and media for your congregation with ease.",
+      "cta": "Get Started"
+    },
+    "features": {
+      "title": "Everything you need",
+      "songs": {
+        "title": "Song Library",
+        "description": "Organize your worship songs with sections, keys, and arrangements."
+      },
+      "events": {
+        "title": "Service Planning",
+        "description": "Build service orders and coordinate with your team."
+      },
+      "live": {
+        "title": "Live Control",
+        "description": "Control presentations in real-time from any device."
+      }
+    }
+  },
+  "songs": {
+    "title": "Songs",
+    "addSong": "Add Song",
+    "searchPlaceholder": "Search songs...",
+    "allTags": "All Tags",
+    "showing": "Showing {{count}} of {{total}} songs",
+    "noSongs": "No songs yet. Add your first worship song to get started.",
+    "noResults": "No songs match your search.",
+    "create": {
+      "title": "Add New Song",
+      "songTitle": "Title",
+      "author": "Author",
+      "lyrics": "Lyrics",
+      "lyricsHint": "Separate sections with a blank line",
+      "creating": "Creating...",
+      "create": "Create Song",
+      "cancel": "Cancel"
+    },
+    "edit": {
+      "title": "Edit Song",
+      "background": "Background",
+      "noBackground": "No background",
+      "changeBackground": "Change Background",
+      "lyricsSection": "Lyrics",
+      "addSection": "+ Add Section",
+      "saving": "Saving...",
+      "save": "Save Changes",
+      "delete": "Delete"
+    },
+    "sections": {
+      "type": "Type",
+      "label": "Label",
+      "lines": "Lines",
+      "linesPlaceholder": "Enter lyrics lines (one per line)",
+      "labelPlaceholder": "Section label",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "deleteSection": "Delete section",
+      "verse": "verse",
+      "chorus": "chorus",
+      "bridge": "bridge",
+      "preChorus": "pre-chorus",
+      "tag": "tag",
+      "intro": "intro",
+      "outro": "outro"
+    },
+    "backToSongs": "Back to Songs"
+  },
+  "events": {
+    "title": "Events",
+    "createEvent": "Create Event",
+    "noEvents": "No events yet. Create your first service to get started.",
+    "control": "Control",
+    "create": {
+      "title": "Create New Event",
+      "eventTitle": "Title",
+      "scheduledAt": "Scheduled Date & Time",
+      "status": "Status",
+      "creating": "Creating...",
+      "create": "Create Event",
+      "cancel": "Cancel"
+    },
+    "edit": {
+      "title": "Event Details",
+      "saving": "Saving...",
+      "save": "Save Changes",
+      "delete": "Delete"
+    },
+    "status": {
+      "draft": "Draft",
+      "ready": "Ready",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "serviceOrder": {
+      "title": "Service Order",
+      "empty": "No items in service order. Add songs to get started.",
+      "selectSong": "Select a song to add...",
+      "addSong": "Add Song",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove"
+    },
+    "backToEvents": "Back to Events"
+  },
+  "media": {
+    "title": "Media",
+    "upload": "Upload Media",
+    "uploading": "Uploading...",
+    "noMedia": "No media yet. Upload backgrounds and videos to use in your services.",
+    "delete": "Delete",
+    "image": "image",
+    "video": "video",
+    "picker": {
+      "title": "Select Background Media",
+      "noMedia": "No media available",
+      "uploadHint": "Upload media from the Media Library to use as backgrounds",
+      "none": "None",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    }
+  },
+  "control": {
+    "title": "Live Control",
+    "connected": "Connected",
+    "serviceOrder": "Service Order",
+    "sections": "Sections",
+    "current": "Current",
+    "next": "Next",
+    "noSlide": "No slide selected",
+    "endOfService": "-",
+    "previous": "Previous",
+    "blank": "Blank",
+    "screenBlank": "Screen Blank"
+  },
+  "presentation": {
+    "loading": "Loading presentation...",
+    "notFound": "Event not found",
+    "waitingForControl": "Waiting for control..."
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": {
+      "title": "Profile",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role"
+    },
+    "church": {
+      "title": "Church Settings",
+      "name": "Church Name",
+      "ccli": "CCLI License Number",
+      "ccliPlaceholder": "e.g., 123456",
+      "saving": "Saving...",
+      "save": "Save Changes"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "language": "Language"
+    },
+    "billing": {
+      "title": "Billing",
+      "comingSoon": "Stripe billing integration coming soon..."
+    },
+    "integrations": {
+      "title": "Integrations",
+      "ccli": {
+        "name": "CCLI",
+        "description": "Song licensing and reporting"
+      },
+      "planningCenter": {
+        "name": "Planning Center",
+        "description": "Sync songs and services"
+      },
+      "connect": "Connect"
+    },
+    "team": {
+      "title": "Team Members",
+      "comingSoon": "User management coming soon..."
+    }
+  },
+  "common": {
+    "required": "*",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  }
+}

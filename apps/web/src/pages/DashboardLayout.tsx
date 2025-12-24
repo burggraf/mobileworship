@@ -1,20 +1,22 @@
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@mobileworship/shared';
 
-const navItems = [
-  { to: '/dashboard/songs', label: 'Songs' },
-  { to: '/dashboard/events', label: 'Events' },
-  { to: '/dashboard/media', label: 'Media' },
-  { to: '/dashboard/settings', label: 'Settings' },
-];
-
 export function DashboardLayout() {
+  const { t } = useTranslation();
   const { user, isLoading, signOut } = useAuth();
+
+  const navItems = [
+    { to: '/dashboard/songs', label: t('nav.songs') },
+    { to: '/dashboard/events', label: t('nav.events') },
+    { to: '/dashboard/media', label: t('nav.media') },
+    { to: '/dashboard/settings', label: t('nav.settings') },
+  ];
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">{t('app.loading')}</div>
       </div>
     );
   }
@@ -24,17 +26,17 @@ export function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <header className="border-b dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Mobile Worship</h1>
+          <h1 className="text-xl font-bold">{t('app.name')}</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600 dark:text-gray-400">{user.name}</span>
             <button
               onClick={() => signOut()}
               className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
-              Sign Out
+              {t('nav.signOut')}
             </button>
           </div>
         </div>
