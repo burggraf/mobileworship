@@ -7,7 +7,7 @@
  *   deno run --allow-net --allow-env --allow-read --allow-write scripts/import-hymns.ts [options]
  *
  * Options:
- *   --source=SOURCE Source to import from: hymnstogod (default), pateys
+ *   --source=SOURCE Source to import from: hymnstogod (default), pateys, timelesstruth
  *   --limit=N       Only import first N hymns (for testing)
  *   --dry-run       Scrape and validate but don't insert to database
  *   --output=FILE   Write scraped data to JSON file
@@ -16,8 +16,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { scrapeAllHymns as scrapeHymnsToGod, ScrapedHymn } from './lib/scraper.ts';
 import { scrapeAllHymns as scrapePateys } from './lib/pateys-scraper.ts';
+import { scrapeAllHymns as scrapeTimelessTruths } from './lib/timeless-truths-scraper.ts';
 
-type Source = 'hymnstogod' | 'pateys';
+type Source = 'hymnstogod' | 'pateys' | 'timelesstruth';
 
 interface ImportOptions {
   source: Source;
@@ -33,10 +34,10 @@ function parseArgs(): ImportOptions {
   for (const arg of args) {
     if (arg.startsWith('--source=')) {
       const source = arg.split('=')[1].toLowerCase();
-      if (source === 'hymnstogod' || source === 'pateys') {
+      if (source === 'hymnstogod' || source === 'pateys' || source === 'timelesstruth') {
         options.source = source;
       } else {
-        console.error(`Unknown source: ${source}. Use 'hymnstogod' or 'pateys'.`);
+        console.error(`Unknown source: ${source}. Use 'hymnstogod', 'pateys', or 'timelesstruth'.`);
         Deno.exit(1);
       }
     } else if (arg.startsWith('--limit=')) {
@@ -121,6 +122,7 @@ async function insertHymns(hymns: ScrapedHymn[]): Promise<{ inserted: number; sk
 const SOURCE_NAMES: Record<Source, string> = {
   hymnstogod: 'HymnsToGod.org',
   pateys: 'Pateys.nf.ca',
+  timelesstruth: 'library.timelesstruths.org',
 };
 
 async function main() {
@@ -135,7 +137,12 @@ async function main() {
   console.log('');
 
   // Select scraper based on source
-  const scraper = options.source === 'pateys' ? scrapePateys : scrapeHymnsToGod;
+  const scrapers: Record<Source, typeof scrapeHymnsToGod> = {
+    hymnstogod: scrapeHymnsToGod,
+    pateys: scrapePateys,
+    timelesstruth: scrapeTimelessTruths,
+  };
+  const scraper = scrapers[options.source];
 
   // Scrape hymns
   const result = await scraper({
@@ -160,8 +167,10 @@ async function main() {
   if (result.failed.length > 0) {
     console.log('\nFailed:');
     for (const failure of result.failed.slice(0, 10)) {
-      // Handle both url and hymnNumber formats
-      const id = 'url' in failure ? failure.url : `#${(failure as { hymnNumber: number }).hymnNumber}`;
+      // Handle url, hymnNumber, and slug formats
+      const id = 'url' in failure ? failure.url :
+        'hymnNumber' in failure ? `#${(failure as { hymnNumber: number }).hymnNumber}` :
+        (failure as { slug: string }).slug;
       console.log(`  - ${id}: ${failure.error}`);
     }
     if (result.failed.length > 10) {
