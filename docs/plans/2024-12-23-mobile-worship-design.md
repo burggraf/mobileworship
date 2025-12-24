@@ -15,7 +15,7 @@ Mobile Worship is a multi-platform application for displaying lyrics on overhead
 │  │   Host App  │  │ Client App  │  │   Web App   │  │  TV Apps    │   │
 │  │  (Display)  │  │ (Controller)│  │(Admin+Ctrl) │  │ (Display)   │   │
 │  │             │  │             │  │             │  │             │   │
-│  │React Native │  │React Native │  │   Next.js   │  │ RN + tvOS   │   │
+│  │React Native │  │React Native │  │ Vite+React  │  │ RN + tvOS   │   │
 │  │Win/Mac/Linux│  │ iOS/Android │  │             │  │ Android TV  │   │
 │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘   │
 │         │                │                │                │          │
@@ -348,7 +348,7 @@ Offline behavior:
 **Frontend:**
 - React Native 0.73+
 - react-native-tvos
-- Next.js 14+ (App Router)
+- Vite + React 18 (SPA, Cloudflare Pages)
 - TypeScript
 - Tailwind CSS / NativeWind
 - TanStack Query (server state)

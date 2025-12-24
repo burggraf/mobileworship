@@ -1,0 +1,37 @@
+{
+  "name": "@mobileworship/host",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "macos": "react-native run-macos",
+    "windows": "react-native run-windows",
+    "start": "react-native start",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mobileworship/shared": "workspace:*",
+    "@mobileworship/protocol": "workspace:*",
+    "@supabase/supabase-js": "^2.43.0",
+    "@tanstack/react-query": "^5.32.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0",
+    "react-native-video": "^6.1.0",
+    "react-native-zeroconf": "^0.13.0",
+    "nativewind": "^2.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/runtime": "^7.24.0",
+    "@react-native/babel-preset": "0.74.0",
+    "@react-native/eslint-config": "0.74.0",
+    "@react-native/metro-config": "0.74.0",
+    "@react-native/typescript-config": "0.74.0",
+    "@types/react": "^18.3.0",
+    "tailwindcss": "3.3.2",
+    "typescript": "^5.4.0"
+  }
+}
