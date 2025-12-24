@@ -24,7 +24,30 @@
     "signingUp": "Signing up...",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
-    "createAccount": "Create Account"
+    "createAccount": "Create Account",
+    "forgotPassword": {
+      "link": "Forgot password?",
+      "title": "Reset Password",
+      "description": "Enter your email address and we'll send you a link to reset your password.",
+      "sendLink": "Send Reset Link",
+      "sending": "Sending...",
+      "emailSent": "Check your email for a password reset link.",
+      "backToLogin": "Back to Sign In",
+      "error": "Failed to send reset email"
+    },
+    "resetPassword": {
+      "title": "Set New Password",
+      "description": "Enter your new password below.",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "update": "Update Password",
+      "updating": "Updating...",
+      "success": "Your password has been updated successfully!",
+      "redirecting": "Redirecting to sign in...",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "error": "Failed to update password"
+    }
   },
   "home": {
     "hero": {
