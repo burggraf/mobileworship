@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useMedia } from '@mobileworship/shared';
 
 interface MediaPickerProps {
@@ -8,6 +9,7 @@ interface MediaPickerProps {
 }
 
 export function MediaPicker({ isOpen, onClose, onSelect, selectedId }: MediaPickerProps) {
+  const { t } = useTranslation();
   const { media, isLoading, getPublicUrl } = useMedia();
 
   if (!isOpen) return null;
@@ -54,7 +56,7 @@ export function MediaPicker({ isOpen, onClose, onSelect, selectedId }: MediaPick
         {/* Header */}
         <div className="px-6 py-4 border-b dark:border-gray-700">
           <h2 id="media-picker-title" className="text-xl font-semibold">
-            Select Background Media
+            {t('media.picker.title')}
           </h2>
         </div>
 
@@ -83,14 +85,14 @@ export function MediaPicker({ isOpen, onClose, onSelect, selectedId }: MediaPick
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                <p className="text-gray-500 dark:text-gray-400">Loading media...</p>
+                <p className="text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
               </div>
             </div>
           ) : media.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 mb-2">No media available</p>
+              <p className="text-gray-500 dark:text-gray-400 mb-2">{t('media.picker.noMedia')}</p>
               <p className="text-sm text-gray-400 dark:text-gray-500">
-                Upload media from the Media Library to use as backgrounds
+                {t('media.picker.uploadHint')}
               </p>
             </div>
           ) : (
@@ -123,7 +125,7 @@ export function MediaPicker({ isOpen, onClose, onSelect, selectedId }: MediaPick
                       d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">None</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('media.picker.none')}</span>
                 </div>
               </button>
 
@@ -200,14 +202,14 @@ export function MediaPicker({ isOpen, onClose, onSelect, selectedId }: MediaPick
             onClick={onClose}
             className="px-4 py-2 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
-            Cancel
+            {t('media.picker.cancel')}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
           >
-            Confirm
+            {t('media.picker.confirm')}
           </button>
         </div>
       </div>

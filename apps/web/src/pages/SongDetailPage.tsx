@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useSongs, useAuth, useMedia, useSupabase, parseSongMarkdown, buildSongMarkdown } from '@mobileworship/shared';
 import type { SongMetadata } from '@mobileworship/shared';
 import { SongEditor } from '../components/SongEditor';
 import { MediaPicker } from '../components/MediaPicker';
 
 export function SongDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const supabase = useSupabase();
@@ -65,12 +67,12 @@ export function SongDetailPage() {
   if (!song) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 mb-4">Song not found</p>
+        <p className="text-gray-500 mb-4">{t('songs.notFound')}</p>
         <Link
           to="/dashboard/songs"
           className="text-primary-600 hover:text-primary-700 hover:underline"
         >
-          Back to Songs
+          {t('songs.backToSongs')}
         </Link>
       </div>
     );
@@ -81,7 +83,7 @@ export function SongDetailPage() {
     setError(null);
 
     if (!metadata.title.trim()) {
-      setError('Title is required');
+      setError(t('songs.edit.titleRequired'));
       return;
     }
 
@@ -105,22 +107,20 @@ export function SongDetailPage() {
       });
       setHasChanges(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save song');
+      setError(err instanceof Error ? err.message : t('songs.edit.saveFailed'));
     }
   };
 
   const handleDelete = async () => {
     if (!id) return;
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${song.title}"? This action cannot be undone.`
-    );
+    const confirmed = window.confirm(t('songs.edit.deleteConfirm', { title: song.title }));
     if (!confirmed) return;
 
     try {
       await deleteSong.mutateAsync(id);
       navigate('/dashboard/songs');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete song');
+      setError(err instanceof Error ? err.message : t('songs.edit.deleteFailed'));
     }
   };
 
@@ -152,7 +152,7 @@ export function SongDetailPage() {
 
       setLyrics(formattedLyrics);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to format lyrics with AI');
+      setError(err instanceof Error ? err.message : t('songs.edit.aiFormatFailed'));
     } finally {
       setIsAIFormatting(false);
     }
@@ -170,10 +170,10 @@ export function SongDetailPage() {
           to="/dashboard/songs"
           className="text-primary-600 hover:text-primary-700 hover:underline text-sm mb-4 inline-block"
         >
-          &larr; Back to Songs
+          &larr; {t('songs.backToSongs')}
         </Link>
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Edit Song</h2>
+          <h2 className="text-2xl font-bold">{t('songs.edit.title')}</h2>
           {canEdit && (
             <div className="flex gap-2">
               <button
@@ -181,14 +181,14 @@ export function SongDetailPage() {
                 disabled={isDeleting || isSaving}
                 className="px-4 py-2 border border-red-600 text-red-600 dark:border-red-500 dark:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? t('songs.edit.deleting') : t('songs.edit.delete')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={!hasChanges || isSaving || isDeleting}
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? t('songs.edit.saving') : t('songs.edit.save')}
               </button>
             </div>
           )}
@@ -215,7 +215,7 @@ export function SongDetailPage() {
 
       {/* Background Section */}
       <div className="mt-6">
-        <label className="block text-sm font-medium mb-2">Background</label>
+        <label className="block text-sm font-medium mb-2">{t('songs.edit.background')}</label>
         <div className="flex items-start gap-4">
           {backgroundId ? (
             <div className="relative w-48 aspect-video rounded-lg overflow-hidden border dark:border-gray-700">
@@ -224,19 +224,19 @@ export function SongDetailPage() {
                 if (!backgroundMedia) {
                   return (
                     <div className="w-full h-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-                      <span className="text-gray-400 text-sm">Not found</span>
+                      <span className="text-gray-400 text-sm">{t('songs.edit.notFoundMedia')}</span>
                     </div>
                   );
                 }
                 const publicUrl = getPublicUrl(backgroundMedia.storage_path);
                 return (
-                  <img src={publicUrl} alt="Background" className="w-full h-full object-cover" />
+                  <img src={publicUrl} alt={t('songs.edit.background')} className="w-full h-full object-cover" />
                 );
               })()}
             </div>
           ) : (
             <div className="w-48 aspect-video rounded-lg bg-gray-100 dark:bg-gray-900 border dark:border-gray-700 flex items-center justify-center">
-              <span className="text-gray-400 text-sm">No background</span>
+              <span className="text-gray-400 text-sm">{t('songs.edit.noBackground')}</span>
             </div>
           )}
           <button
@@ -244,7 +244,7 @@ export function SongDetailPage() {
             disabled={!canEdit || isSaving || isDeleting}
             className="px-4 py-2 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
           >
-            Change Background
+            {t('songs.edit.changeBackground')}
           </button>
         </div>
       </div>

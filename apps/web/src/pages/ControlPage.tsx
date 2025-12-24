@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth, useEvents, useSongs, useRealtime, parseSongMarkdown } from '@mobileworship/shared';
 import type { EventItem, ParsedSong } from '@mobileworship/shared';
 
 export function ControlPage() {
+  const { t } = useTranslation();
   const { eventId } = useParams<{ eventId: string }>();
   const { user, isLoading, can } = useAuth();
   const { events } = useEvents();
@@ -57,7 +59,7 @@ export function ControlPage() {
   const getItemTitle = (item: EventItem): string => {
     if (item.type === 'song') {
       const song = songs.find((s) => s.id === item.id);
-      return song?.title || 'Unknown Song';
+      return song?.title || t('control.unknownSong');
     }
     return item.type.charAt(0).toUpperCase() + item.type.slice(1);
   };
@@ -65,7 +67,7 @@ export function ControlPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">{t('common.loading')}</div>
       </div>
     );
   }
@@ -82,9 +84,9 @@ export function ControlPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">Event not found</p>
+          <p className="text-gray-500 mb-4">{t('control.eventNotFound')}</p>
           <Link to="/dashboard" className="text-primary-600 hover:underline">
-            Back to Dashboard
+            {t('control.backToDashboard')}
           </Link>
         </div>
       </div>
@@ -99,13 +101,13 @@ export function ControlPage() {
             to="/dashboard"
             className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
           >
-            ← Back
+            ← {t('control.back')}
           </Link>
           <h1 className="font-bold text-lg">{event.title}</h1>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <span className="text-sm text-gray-600 dark:text-gray-400">Connected</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">{t('control.connected')}</span>
         </div>
       </header>
 
@@ -113,9 +115,9 @@ export function ControlPage() {
         {/* Service Order Sidebar */}
         <aside className="w-64 border-r dark:border-gray-800 bg-white dark:bg-gray-950 overflow-y-auto">
           <div className="p-4">
-            <h2 className="font-semibold mb-4">Service Order</h2>
+            <h2 className="font-semibold mb-4">{t('control.serviceOrder')}</h2>
             {items.length === 0 ? (
-              <p className="text-sm text-gray-500">No items in service order</p>
+              <p className="text-sm text-gray-500">{t('control.noItems')}</p>
             ) : (
               <div className="space-y-2">
                 {items.map((item, index) => (
@@ -145,13 +147,13 @@ export function ControlPage() {
               {/* Current Slide */}
               <div className="border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 p-4">
                 <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
-                  Current
+                  {t('control.current')}
                 </h3>
                 <div className="aspect-video bg-black rounded-lg flex items-center justify-center text-white p-6 relative">
                   {state.isBlank ? (
                     <div className="text-center">
                       <div className="text-4xl mb-2">⬛</div>
-                      <p className="text-gray-400 text-sm">Screen Blank</p>
+                      <p className="text-gray-400 text-sm">{t('control.screenBlank')}</p>
                     </div>
                   ) : currentSection ? (
                     <div className="text-center w-full">
@@ -165,14 +167,14 @@ export function ControlPage() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-gray-400">No slide selected</p>
+                    <p className="text-gray-400">{t('control.noSlide')}</p>
                   )}
                 </div>
               </div>
 
               {/* Next Slide */}
               <div className="border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 p-4">
-                <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">Next</h3>
+                <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">{t('control.next')}</h3>
                 <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center text-white p-6">
                   {nextSection ? (
                     <div className="text-center w-full opacity-70">
@@ -197,7 +199,7 @@ export function ControlPage() {
         {/* Song Sections Sidebar */}
         <aside className="w-64 border-l dark:border-gray-800 bg-white dark:bg-gray-950 overflow-y-auto">
           <div className="p-4">
-            <h2 className="font-semibold mb-4">Sections</h2>
+            <h2 className="font-semibold mb-4">{t('control.sections')}</h2>
             {currentItem && currentItem.type === 'song' && currentSections.length > 0 ? (
               <div className="space-y-1">
                 {currentSections.map((section, index) => (
@@ -219,7 +221,7 @@ export function ControlPage() {
               </div>
             ) : (
               <p className="text-sm text-gray-500">
-                {currentItem ? 'No sections available' : 'Select an item'}
+                {currentItem ? t('control.noSections') : t('control.selectItem')}
               </p>
             )}
           </div>
@@ -234,7 +236,7 @@ export function ControlPage() {
             disabled={state.currentItemIndex === 0 && state.currentSectionIndex === 0}
             className="px-6 py-3 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
-            Previous
+            {t('control.previous')}
           </button>
           <button
             onClick={toggleBlank}
@@ -244,7 +246,7 @@ export function ControlPage() {
                 : 'bg-gray-800 text-white hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600'
             }`}
           >
-            {state.isBlank ? 'Unblank' : 'Blank'}
+            {state.isBlank ? t('control.unblank') : t('control.blank')}
           </button>
           <button
             onClick={goNext}
@@ -254,7 +256,7 @@ export function ControlPage() {
             }
             className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Next
+            {t('control.next')}
           </button>
         </div>
       </footer>

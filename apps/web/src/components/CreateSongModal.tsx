@@ -1,4 +1,5 @@
 import { useState, FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSongs, buildSongMarkdown } from '@mobileworship/shared';
 
 interface CreateSongModalProps {
@@ -7,6 +8,7 @@ interface CreateSongModalProps {
 }
 
 export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
+  const { t } = useTranslation();
   const { createSong } = useSongs();
   const [title, setTitle] = useState('');
   const [lyrics, setLyrics] = useState('');
@@ -19,7 +21,7 @@ export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
     setError(null);
 
     if (!title.trim()) {
-      setError('Title is required');
+      setError(t('songs.create.titleRequired'));
       return;
     }
 
@@ -40,7 +42,7 @@ export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
       setError(null);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create song');
+      setError(err instanceof Error ? err.message : t('songs.create.failed'));
     }
   };
 
@@ -60,7 +62,7 @@ export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
       >
         {/* Header */}
         <div className="px-6 py-4 border-b dark:border-gray-700 flex items-center justify-between">
-          <h2 id="modal-title" className="text-xl font-semibold">Create New Song</h2>
+          <h2 id="modal-title" className="text-xl font-semibold">{t('songs.create.title')}</h2>
           <button
             onClick={handleClose}
             disabled={createSong.isPending}
@@ -76,7 +78,7 @@ export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
             {/* Title */}
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-1">
-                Title <span className="text-red-500">*</span>
+                {t('songs.create.songTitle')} <span className="text-red-500">{t('common.required')}</span>
               </label>
               <input
                 id="title"
@@ -85,7 +87,7 @@ export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={createSong.isPending}
                 className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
-                placeholder="Enter song title"
+                placeholder={t('songs.create.titlePlaceholder')}
                 autoFocus
               />
             </div>
@@ -93,7 +95,7 @@ export function CreateSongModal({ isOpen, onClose }: CreateSongModalProps) {
             {/* Lyrics */}
             <div>
               <label htmlFor="lyrics" className="block text-sm font-medium mb-1">
-                Lyrics
+                {t('songs.create.lyrics')}
               </label>
               <textarea
                 id="lyrics"
@@ -110,7 +112,7 @@ That saved a wretch like me
 I once was lost but now am found`}
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Use # headers for sections. Add more details after creation.
+                {t('songs.create.addDetailsHint')}
               </p>
             </div>
 
@@ -130,14 +132,14 @@ I once was lost but now am found`}
               disabled={createSong.isPending}
               className="px-4 py-2 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
             >
-              Cancel
+              {t('songs.create.cancel')}
             </button>
             <button
               type="submit"
               disabled={createSong.isPending}
               className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
             >
-              {createSong.isPending ? 'Creating...' : 'Create Song'}
+              {createSong.isPending ? t('songs.create.creating') : t('songs.create.create')}
             </button>
           </div>
         </form>

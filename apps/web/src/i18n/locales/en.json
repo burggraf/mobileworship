@@ -79,26 +79,50 @@
     "showing": "Showing {{count}} of {{total}} songs",
     "noSongs": "No songs yet. Add your first worship song to get started.",
     "noResults": "No songs match your search.",
+    "notFound": "Song not found",
     "create": {
       "title": "Add New Song",
       "songTitle": "Title",
       "author": "Author",
       "lyrics": "Lyrics",
-      "lyricsHint": "Separate sections with a blank line",
+      "lyricsHint": "Use # headers for sections: # Verse, # Chorus, # Bridge, etc.",
       "creating": "Creating...",
       "create": "Create Song",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "titleRequired": "Title is required",
+      "failed": "Failed to create song",
+      "titlePlaceholder": "Enter song title",
+      "addDetailsHint": "Use # headers for sections. Add more details after creation."
     },
     "edit": {
       "title": "Edit Song",
       "background": "Background",
       "noBackground": "No background",
+      "notFoundMedia": "Not found",
       "changeBackground": "Change Background",
       "lyricsSection": "Lyrics",
       "addSection": "+ Add Section",
       "saving": "Saving...",
       "save": "Save Changes",
-      "delete": "Delete"
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "titleRequired": "Title is required",
+      "saveFailed": "Failed to save song",
+      "deleteFailed": "Failed to delete song",
+      "deleteConfirm": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+      "aiFormatFailed": "Failed to format lyrics with AI",
+      "aiFormat": "AI Format",
+      "aiFormatting": "Formatting...",
+      "titlePlaceholder": "Song title",
+      "authorPlaceholder": "Song author",
+      "key": "Key",
+      "selectKey": "Select key...",
+      "tempo": "Tempo (BPM)",
+      "ccli": "CCLI Song #",
+      "tags": "Tags",
+      "addTagPlaceholder": "Add tag...",
+      "addTag": "Add",
+      "formatWithAI": "Format lyrics with AI"
     },
     "sections": {
       "type": "Type",
@@ -124,6 +148,7 @@
     "createEvent": "Create Event",
     "noEvents": "No events yet. Create your first service to get started.",
     "control": "Control",
+    "notFound": "Event not found",
     "create": {
       "title": "Create New Event",
       "eventTitle": "Title",
@@ -131,13 +156,24 @@
       "status": "Status",
       "creating": "Creating...",
       "create": "Create Event",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "titleRequired": "Title is required",
+      "failed": "Failed to create event",
+      "titlePlaceholder": "Sunday Morning Service",
+      "scheduledHint": "Optional: Leave blank to schedule later",
+      "statusHint": "Draft events can be edited. Ready events are prepared for use."
     },
     "edit": {
       "title": "Event Details",
       "saving": "Saving...",
       "save": "Save Changes",
-      "delete": "Delete"
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "titleRequired": "Title is required",
+      "saveFailed": "Failed to save event",
+      "deleteFailed": "Failed to delete event",
+      "deleteConfirm": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+      "titlePlaceholder": "Enter event title"
     },
     "status": {
       "draft": "Draft",
@@ -152,7 +188,8 @@
       "addSong": "Add Song",
       "moveUp": "Move up",
       "moveDown": "Move down",
-      "remove": "Remove"
+      "remove": "Remove",
+      "unknownSong": "Unknown Song"
     },
     "backToEvents": "Back to Events"
   },
@@ -184,12 +221,21 @@
     "endOfService": "-",
     "previous": "Previous",
     "blank": "Blank",
-    "screenBlank": "Screen Blank"
+    "unblank": "Unblank",
+    "screenBlank": "Screen Blank",
+    "noItems": "No items in service order",
+    "noSections": "No sections available",
+    "selectItem": "Select an item",
+    "unknownSong": "Unknown Song",
+    "eventNotFound": "Event not found",
+    "backToDashboard": "Back to Dashboard",
+    "back": "Back"
   },
   "presentation": {
     "loading": "Loading presentation...",
     "notFound": "Event not found",
-    "waitingForControl": "Waiting for control..."
+    "waitingForControl": "Waiting for control...",
+    "noContent": "No content to display"
   },
   "settings": {
     "title": "Settings",

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EventItem } from '@mobileworship/shared';
 
 interface Song {
@@ -15,6 +16,7 @@ interface ServiceOrderEditorProps {
 }
 
 export function ServiceOrderEditor({ items, onChange, songs, readOnly }: ServiceOrderEditorProps) {
+  const { t } = useTranslation();
   const [selectedSongId, setSelectedSongId] = useState('');
 
   const handleAddSong = () => {
@@ -54,7 +56,7 @@ export function ServiceOrderEditor({ items, onChange, songs, readOnly }: Service
   const getItemTitle = (item: EventItem): string => {
     if (item.type === 'song') {
       const song = songs.find((s) => s.id === item.id);
-      return song?.title || 'Unknown Song';
+      return song?.title || t('events.serviceOrder.unknownSong');
     }
     return item.type.charAt(0).toUpperCase() + item.type.slice(1);
   };
@@ -78,7 +80,7 @@ export function ServiceOrderEditor({ items, onChange, songs, readOnly }: Service
       {/* Item List */}
       {items.length === 0 ? (
         <div className="text-center py-8 text-gray-500 border border-dashed dark:border-gray-700 rounded-lg">
-          <p>No items in service order. Add songs to get started.</p>
+          <p>{t('events.serviceOrder.empty')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -105,7 +107,7 @@ export function ServiceOrderEditor({ items, onChange, songs, readOnly }: Service
                     onClick={() => handleMoveUp(index)}
                     disabled={index === 0}
                     className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition disabled:opacity-30 disabled:cursor-not-allowed"
-                    title="Move up"
+                    title={t('events.serviceOrder.moveUp')}
                   >
                     <svg
                       className="w-4 h-4"
@@ -125,7 +127,7 @@ export function ServiceOrderEditor({ items, onChange, songs, readOnly }: Service
                     onClick={() => handleMoveDown(index)}
                     disabled={index === items.length - 1}
                     className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition disabled:opacity-30 disabled:cursor-not-allowed"
-                    title="Move down"
+                    title={t('events.serviceOrder.moveDown')}
                   >
                     <svg
                       className="w-4 h-4"
@@ -144,7 +146,7 @@ export function ServiceOrderEditor({ items, onChange, songs, readOnly }: Service
                   <button
                     onClick={() => handleRemove(index)}
                     className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition"
-                    title="Remove"
+                    title={t('events.serviceOrder.remove')}
                   >
                     <svg
                       className="w-4 h-4"
@@ -175,7 +177,7 @@ export function ServiceOrderEditor({ items, onChange, songs, readOnly }: Service
             onChange={(e) => setSelectedSongId(e.target.value)}
             className="flex-1 px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600"
           >
-            <option value="">Select a song to add...</option>
+            <option value="">{t('events.serviceOrder.selectSong')}</option>
             {songs.map((song) => (
               <option key={song.id} value={song.id}>
                 {song.title}
@@ -188,7 +190,7 @@ export function ServiceOrderEditor({ items, onChange, songs, readOnly }: Service
             disabled={!selectedSongId}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Add Song
+            {t('events.serviceOrder.addSong')}
           </button>
         </div>
       )}

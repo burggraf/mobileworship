@@ -1,4 +1,5 @@
 import { useState, FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEvents } from '@mobileworship/shared';
 
 interface CreateEventModalProps {
@@ -7,6 +8,7 @@ interface CreateEventModalProps {
 }
 
 export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
+  const { t } = useTranslation();
   const { createEvent } = useEvents();
   const [title, setTitle] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
@@ -21,7 +23,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
 
     // Validation
     if (!title.trim()) {
-      setError('Title is required');
+      setError(t('events.create.titleRequired'));
       return;
     }
 
@@ -40,7 +42,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
       setError(null);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create event');
+      setError(err instanceof Error ? err.message : t('events.create.failed'));
     }
   };
 
@@ -65,7 +67,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
       >
         {/* Header */}
         <div className="px-6 py-4 border-b dark:border-gray-700">
-          <h2 id="modal-title" className="text-xl font-semibold">Create New Event</h2>
+          <h2 id="modal-title" className="text-xl font-semibold">{t('events.create.title')}</h2>
         </div>
 
         {/* Form */}
@@ -77,7 +79,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
                 htmlFor="title"
                 className="block text-sm font-medium mb-1"
               >
-                Title <span className="text-red-500">*</span>
+                {t('events.create.eventTitle')} <span className="text-red-500">{t('common.required')}</span>
               </label>
               <input
                 id="title"
@@ -86,7 +88,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={createEvent.isPending}
                 className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
-                placeholder="Sunday Morning Service"
+                placeholder={t('events.create.titlePlaceholder')}
                 autoFocus
               />
             </div>
@@ -97,7 +99,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
                 htmlFor="scheduledAt"
                 className="block text-sm font-medium mb-1"
               >
-                Scheduled Date/Time
+                {t('events.create.scheduledAt')}
               </label>
               <input
                 id="scheduledAt"
@@ -108,7 +110,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
                 className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Optional: Leave blank to schedule later
+                {t('events.create.scheduledHint')}
               </p>
             </div>
 
@@ -118,7 +120,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
                 htmlFor="status"
                 className="block text-sm font-medium mb-1"
               >
-                Status
+                {t('events.create.status')}
               </label>
               <select
                 id="status"
@@ -127,11 +129,11 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
                 disabled={createEvent.isPending}
                 className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
               >
-                <option value="draft">Draft</option>
-                <option value="ready">Ready</option>
+                <option value="draft">{t('events.status.draft')}</option>
+                <option value="ready">{t('events.status.ready')}</option>
               </select>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Draft events can be edited. Ready events are prepared for use.
+                {t('events.create.statusHint')}
               </p>
             </div>
 
@@ -156,7 +158,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
               disabled={createEvent.isPending}
               className="px-4 py-2 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
+              {t('events.create.cancel')}
             </button>
             <button
               type="submit"
@@ -185,10 +187,10 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Creating...
+                  {t('events.create.creating')}
                 </>
               ) : (
-                'Create Event'
+                t('events.create.create')
               )}
             </button>
           </div>

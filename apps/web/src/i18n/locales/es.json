@@ -79,26 +79,50 @@
     "showing": "Mostrando {{count}} de {{total}} canciones",
     "noSongs": "Aún no hay canciones. Agrega tu primera canción de adoración para comenzar.",
     "noResults": "Ninguna canción coincide con tu búsqueda.",
+    "notFound": "Canción no encontrada",
     "create": {
       "title": "Agregar Nueva Canción",
       "songTitle": "Título",
       "author": "Autor",
       "lyrics": "Letra",
-      "lyricsHint": "Separa las secciones con una línea en blanco",
+      "lyricsHint": "Usa encabezados # para secciones: # Verso, # Coro, # Puente, etc.",
       "creating": "Creando...",
       "create": "Crear Canción",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "titleRequired": "El título es requerido",
+      "failed": "Error al crear la canción",
+      "titlePlaceholder": "Ingresa el título de la canción",
+      "addDetailsHint": "Usa encabezados # para secciones. Agrega más detalles después de crear."
     },
     "edit": {
       "title": "Editar Canción",
       "background": "Fondo",
       "noBackground": "Sin fondo",
+      "notFoundMedia": "No encontrado",
       "changeBackground": "Cambiar Fondo",
       "lyricsSection": "Letra",
       "addSection": "+ Agregar Sección",
       "saving": "Guardando...",
       "save": "Guardar Cambios",
-      "delete": "Eliminar"
+      "delete": "Eliminar",
+      "deleting": "Eliminando...",
+      "titleRequired": "El título es requerido",
+      "saveFailed": "Error al guardar la canción",
+      "deleteFailed": "Error al eliminar la canción",
+      "deleteConfirm": "¿Estás seguro de que deseas eliminar \"{{title}}\"? Esta acción no se puede deshacer.",
+      "aiFormatFailed": "Error al formatear la letra con IA",
+      "aiFormat": "Formato IA",
+      "aiFormatting": "Formateando...",
+      "titlePlaceholder": "Título de la canción",
+      "authorPlaceholder": "Autor de la canción",
+      "key": "Tonalidad",
+      "selectKey": "Seleccionar tonalidad...",
+      "tempo": "Tempo (BPM)",
+      "ccli": "Número CCLI",
+      "tags": "Etiquetas",
+      "addTagPlaceholder": "Agregar etiqueta...",
+      "addTag": "Agregar",
+      "formatWithAI": "Formatear letra con IA"
     },
     "sections": {
       "type": "Tipo",
@@ -124,6 +148,7 @@
     "createEvent": "Crear Evento",
     "noEvents": "Aún no hay eventos. Crea tu primer servicio para comenzar.",
     "control": "Controlar",
+    "notFound": "Evento no encontrado",
     "create": {
       "title": "Crear Nuevo Evento",
       "eventTitle": "Título",
@@ -131,13 +156,24 @@
       "status": "Estado",
       "creating": "Creando...",
       "create": "Crear Evento",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "titleRequired": "El título es requerido",
+      "failed": "Error al crear el evento",
+      "titlePlaceholder": "Servicio Dominical",
+      "scheduledHint": "Opcional: Dejar en blanco para programar después",
+      "statusHint": "Los eventos en borrador se pueden editar. Los eventos listos están preparados para usar."
     },
     "edit": {
       "title": "Detalles del Evento",
       "saving": "Guardando...",
       "save": "Guardar Cambios",
-      "delete": "Eliminar"
+      "delete": "Eliminar",
+      "deleting": "Eliminando...",
+      "titleRequired": "El título es requerido",
+      "saveFailed": "Error al guardar el evento",
+      "deleteFailed": "Error al eliminar el evento",
+      "deleteConfirm": "¿Estás seguro de que deseas eliminar \"{{title}}\"? Esta acción no se puede deshacer.",
+      "titlePlaceholder": "Ingresa el título del evento"
     },
     "status": {
       "draft": "Borrador",
@@ -152,7 +188,8 @@
       "addSong": "Agregar Canción",
       "moveUp": "Mover arriba",
       "moveDown": "Mover abajo",
-      "remove": "Eliminar"
+      "remove": "Eliminar",
+      "unknownSong": "Canción Desconocida"
     },
     "backToEvents": "Volver a Eventos"
   },
@@ -184,12 +221,21 @@
     "endOfService": "-",
     "previous": "Anterior",
     "blank": "Negro",
-    "screenBlank": "Pantalla en Negro"
+    "unblank": "Mostrar",
+    "screenBlank": "Pantalla en Negro",
+    "noItems": "No hay elementos en el orden del servicio",
+    "noSections": "No hay secciones disponibles",
+    "selectItem": "Selecciona un elemento",
+    "unknownSong": "Canción Desconocida",
+    "eventNotFound": "Evento no encontrado",
+    "backToDashboard": "Volver al Panel",
+    "back": "Volver"
   },
   "presentation": {
     "loading": "Cargando presentación...",
     "notFound": "Evento no encontrado",
-    "waitingForControl": "Esperando control..."
+    "waitingForControl": "Esperando control...",
+    "noContent": "Sin contenido para mostrar"
   },
   "settings": {
     "title": "Configuración",

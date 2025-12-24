@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SongMetadata } from '@mobileworship/shared';
 
 interface SongEditorProps {
@@ -23,6 +24,7 @@ export function SongEditor({
   isAIFormatting = false,
   readOnly = false,
 }: SongEditorProps) {
+  const { t } = useTranslation();
   const [tagInput, setTagInput] = useState('');
 
   const updateMetadata = (updates: Partial<SongMetadata>) => {
@@ -57,7 +59,7 @@ export function SongEditor({
         {/* Title */}
         <div className="md:col-span-2">
           <label htmlFor="title" className="block text-sm font-medium mb-1">
-            Title <span className="text-red-500">*</span>
+            {t('songs.create.songTitle')} <span className="text-red-500">{t('common.required')}</span>
           </label>
           <input
             id="title"
@@ -66,14 +68,14 @@ export function SongEditor({
             onChange={(e) => updateMetadata({ title: e.target.value })}
             disabled={readOnly}
             className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
-            placeholder="Song title"
+            placeholder={t('songs.edit.titlePlaceholder')}
           />
         </div>
 
         {/* Author */}
         <div className="md:col-span-2">
           <label htmlFor="author" className="block text-sm font-medium mb-1">
-            Author
+            {t('songs.create.author')}
           </label>
           <input
             id="author"
@@ -82,14 +84,14 @@ export function SongEditor({
             onChange={(e) => updateMetadata({ author: e.target.value || undefined })}
             disabled={readOnly}
             className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
-            placeholder="Song author"
+            placeholder={t('songs.edit.authorPlaceholder')}
           />
         </div>
 
         {/* Key */}
         <div>
           <label htmlFor="key" className="block text-sm font-medium mb-1">
-            Key
+            {t('songs.edit.key')}
           </label>
           <select
             id="key"
@@ -100,7 +102,7 @@ export function SongEditor({
           >
             {KEY_OPTIONS.map((k) => (
               <option key={k} value={k}>
-                {k || 'Select key...'}
+                {k || t('songs.edit.selectKey')}
               </option>
             ))}
           </select>
@@ -109,7 +111,7 @@ export function SongEditor({
         {/* Tempo */}
         <div>
           <label htmlFor="tempo" className="block text-sm font-medium mb-1">
-            Tempo (BPM)
+            {t('songs.edit.tempo')}
           </label>
           <input
             id="tempo"
@@ -127,7 +129,7 @@ export function SongEditor({
         {/* CCLI */}
         <div>
           <label htmlFor="ccli" className="block text-sm font-medium mb-1">
-            CCLI Song #
+            {t('songs.edit.ccli')}
           </label>
           <input
             id="ccli"
@@ -142,7 +144,7 @@ export function SongEditor({
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium mb-1">Tags</label>
+          <label className="block text-sm font-medium mb-1">{t('songs.edit.tags')}</label>
           <div className="flex flex-wrap gap-2 mb-2">
             {metadata.tags?.map((tag) => (
               <span
@@ -170,14 +172,14 @@ export function SongEditor({
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
                 className="flex-1 px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 text-sm"
-                placeholder="Add tag..."
+                placeholder={t('songs.edit.addTagPlaceholder')}
               />
               <button
                 type="button"
                 onClick={addTag}
                 className="px-3 py-2 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
               >
-                Add
+                {t('songs.edit.addTag')}
               </button>
             </div>
           )}
@@ -188,7 +190,7 @@ export function SongEditor({
       <div>
         <div className="flex items-center justify-between mb-1">
           <label htmlFor="lyrics" className="block text-sm font-medium">
-            Lyrics
+            {t('songs.create.lyrics')}
           </label>
           {!readOnly && onAIFormat && (
             <button
@@ -196,16 +198,16 @@ export function SongEditor({
               onClick={onAIFormat}
               disabled={isAIFormatting || !lyrics.trim()}
               className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Format lyrics with AI"
+              title={t('songs.edit.formatWithAI')}
             >
               {isAIFormatting ? (
                 <>
                   <span className="animate-spin">⏳</span>
-                  <span>Formatting...</span>
+                  <span>{t('songs.edit.aiFormatting')}</span>
                 </>
               ) : (
                 <>
-                  <span>AI</span>
+                  <span>{t('songs.edit.aiFormat')}</span>
                   <span>✨</span>
                 </>
               )}
@@ -228,7 +230,7 @@ I once was lost but now am found
 Was blind but now I see`}
         />
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          Use # headers for sections: # Verse, # Chorus, # Bridge, etc.
+          {t('songs.create.lyricsHint')}
         </p>
       </div>
     </div>

@@ -11,7 +11,7 @@ export function EventsPage() {
   const [showCreate, setShowCreate] = useState(false);
 
   if (isLoading) {
-    return <div className="text-gray-500">Loading events...</div>;
+    return <div className="text-gray-500">{t('common.loading')}</div>;
   }
 
   const statusColors: Record<string, string> = {

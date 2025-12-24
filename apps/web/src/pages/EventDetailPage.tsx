@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEvents, useSongs, useAuth } from '@mobileworship/shared';
 import type { EventItem } from '@mobileworship/shared';
 import { ServiceOrderEditor } from '../components/ServiceOrderEditor';
 
 export function EventDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { events, updateEvent, deleteEvent } = useEvents();
@@ -49,12 +51,12 @@ export function EventDetailPage() {
   if (!event) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 mb-4">Event not found</p>
+        <p className="text-gray-500 mb-4">{t('events.notFound')}</p>
         <Link
           to="/dashboard/events"
           className="text-primary-600 hover:text-primary-700 hover:underline"
         >
-          Back to Events
+          {t('events.backToEvents')}
         </Link>
       </div>
     );
@@ -66,7 +68,7 @@ export function EventDetailPage() {
 
     // Validation
     if (!title.trim()) {
-      setError('Title is required');
+      setError(t('events.edit.titleRequired'));
       return;
     }
 
@@ -80,16 +82,14 @@ export function EventDetailPage() {
       });
       setHasChanges(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save event');
+      setError(err instanceof Error ? err.message : t('events.edit.saveFailed'));
     }
   };
 
   const handleDelete = async () => {
     if (!id) return;
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${event.title}"? This action cannot be undone.`
-    );
+    const confirmed = window.confirm(t('events.edit.deleteConfirm', { title: event.title }));
 
     if (!confirmed) return;
 
@@ -97,7 +97,7 @@ export function EventDetailPage() {
       await deleteEvent.mutateAsync(id);
       navigate('/dashboard/events');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete event');
+      setError(err instanceof Error ? err.message : t('events.edit.deleteFailed'));
     }
   };
 
@@ -120,10 +120,10 @@ export function EventDetailPage() {
           to="/dashboard/events"
           className="text-primary-600 hover:text-primary-700 hover:underline text-sm mb-4 inline-block"
         >
-          &larr; Back to Events
+          &larr; {t('events.backToEvents')}
         </Link>
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Event Details</h2>
+          <h2 className="text-2xl font-bold">{t('events.edit.title')}</h2>
           {canEdit && (
             <div className="flex gap-2">
               <button
@@ -131,14 +131,14 @@ export function EventDetailPage() {
                 disabled={isDeleting || isSaving}
                 className="px-4 py-2 border border-red-600 text-red-600 dark:border-red-500 dark:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? t('events.edit.deleting') : t('events.edit.delete')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={!hasChanges || isSaving || isDeleting}
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? t('events.edit.saving') : t('events.edit.save')}
               </button>
             </div>
           )}
@@ -160,7 +160,7 @@ export function EventDetailPage() {
         {/* Title Field */}
         <div>
           <label htmlFor="title" className="block text-sm font-medium mb-1">
-            Title <span className="text-red-500">*</span>
+            {t('events.create.eventTitle')} <span className="text-red-500">{t('common.required')}</span>
           </label>
           <input
             id="title"
@@ -169,14 +169,14 @@ export function EventDetailPage() {
             onChange={(e) => setTitle(e.target.value)}
             disabled={!canEdit || isSaving || isDeleting}
             className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            placeholder="Enter event title"
+            placeholder={t('events.edit.titlePlaceholder')}
           />
         </div>
 
         {/* Scheduled Date Field */}
         <div>
           <label htmlFor="scheduledAt" className="block text-sm font-medium mb-1">
-            Scheduled Date & Time
+            {t('events.create.scheduledAt')}
           </label>
           <input
             id="scheduledAt"
@@ -191,7 +191,7 @@ export function EventDetailPage() {
         {/* Status Field */}
         <div>
           <label htmlFor="status" className="block text-sm font-medium mb-1">
-            Status
+            {t('events.create.status')}
           </label>
           <div className="flex items-center gap-3">
             <select
@@ -201,20 +201,20 @@ export function EventDetailPage() {
               disabled={!canEdit || isSaving || isDeleting}
               className="flex-1 px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <option value="draft">Draft</option>
-              <option value="ready">Ready</option>
-              <option value="live">Live</option>
-              <option value="completed">Completed</option>
+              <option value="draft">{t('events.status.draft')}</option>
+              <option value="ready">{t('events.status.ready')}</option>
+              <option value="live">{t('events.status.live')}</option>
+              <option value="completed">{t('events.status.completed')}</option>
             </select>
             <span className={`px-3 py-2 text-sm rounded ${statusColors[status]}`}>
-              {status}
+              {t(`events.status.${status}`)}
             </span>
           </div>
         </div>
 
         {/* Service Order */}
         <div>
-          <label className="block text-sm font-medium mb-2">Service Order</label>
+          <label className="block text-sm font-medium mb-2">{t('events.serviceOrder.title')}</label>
           <ServiceOrderEditor
             items={items}
             onChange={setItems}

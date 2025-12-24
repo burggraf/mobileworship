@@ -28,7 +28,7 @@ export function MediaPage() {
   }
 
   if (isLoading) {
-    return <div className="text-gray-500">Loading media...</div>;
+    return <div className="text-gray-500">{t('common.loading')}</div>;
   }
 
   return (

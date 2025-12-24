@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useSupabase, useEvents, useSongs, useMedia, parseSongMarkdown } from '@mobileworship/shared';
 import type { PresentationState, EventItem, ParsedSong, SongSection } from '@mobileworship/shared';
 
 export function PresentationPage() {
+  const { t } = useTranslation();
   const { eventId } = useParams<{ eventId: string }>();
   const supabase = useSupabase();
   const { events } = useEvents();
@@ -136,7 +138,7 @@ export function PresentationPage() {
           </>
         ) : (
           <div className="text-center text-gray-500 text-2xl">
-            No content to display
+            {t('presentation.noContent')}
           </div>
         )}
       </div>
