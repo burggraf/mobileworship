@@ -1,6 +1,8 @@
 export { useSupabase, SupabaseProvider } from './useSupabase';
 export { useAuth, AuthProvider } from './useAuth';
 export { useSongs } from './useSongs';
+export { useGlobalHymns } from './useGlobalHymns';
+export type { GlobalHymn } from './useGlobalHymns';
 export { useEvents } from './useEvents';
 export { useMedia } from './useMedia';
 export { useRealtime } from './useRealtime';

@@ -80,6 +80,25 @@
     "noSongs": "No songs yet. Add your first worship song to get started.",
     "noResults": "No songs match your search.",
     "notFound": "Song not found",
+    "addMenu": {
+      "pasteLyrics": "Paste Lyrics",
+      "searchDatabase": "Search Database"
+    },
+    "search": {
+      "title": "Search Hymn Database",
+      "placeholder": "Search by title or author...",
+      "hint": "Search 400+ public domain hymns",
+      "noResults": "No hymns match your search.",
+      "startTyping": "Start typing to search hymns...",
+      "resultsCount": "{{count}} results",
+      "selectToPreview": "Select a hymn to preview",
+      "writtenBy": "Written by {{name}}",
+      "composedBy": "Music by {{name}}",
+      "source": "Source",
+      "import": "Import to Library",
+      "importing": "Importing...",
+      "importFailed": "Failed to import hymn"
+    },
     "create": {
       "title": "Add New Song",
       "songTitle": "Title",

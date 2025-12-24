@@ -80,6 +80,25 @@
     "noSongs": "Aún no hay canciones. Agrega tu primera canción de adoración para comenzar.",
     "noResults": "Ninguna canción coincide con tu búsqueda.",
     "notFound": "Canción no encontrada",
+    "addMenu": {
+      "pasteLyrics": "Pegar Letra",
+      "searchDatabase": "Buscar en Base de Datos"
+    },
+    "search": {
+      "title": "Buscar Himnos",
+      "placeholder": "Buscar por título o autor...",
+      "hint": "Busca en más de 400 himnos de dominio público",
+      "noResults": "Ningún himno coincide con tu búsqueda.",
+      "startTyping": "Comienza a escribir para buscar himnos...",
+      "resultsCount": "{{count}} resultados",
+      "selectToPreview": "Selecciona un himno para ver la vista previa",
+      "writtenBy": "Escrito por {{name}}",
+      "composedBy": "Música de {{name}}",
+      "source": "Fuente",
+      "import": "Importar a la Biblioteca",
+      "importing": "Importando...",
+      "importFailed": "Error al importar el himno"
+    },
     "create": {
       "title": "Agregar Nueva Canción",
       "songTitle": "Título",

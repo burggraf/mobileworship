@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { BackgroundSource, BackgroundSearchResult } from '../../types/backgrounds';
 import { useBackgroundSearch } from '../../hooks/useBackgroundSearch';
 import { useImportBackground } from '../../hooks/useImportBackground';
@@ -13,7 +12,6 @@ interface FreeBackgroundsTabProps {
 }
 
 export function FreeBackgroundsTab({ onImportSuccess }: FreeBackgroundsTabProps) {
-  const { t } = useTranslation();
   const [source, setSource] = useState<BackgroundSource>('pexels');
   const [selectedBackground, setSelectedBackground] = useState<BackgroundSearchResult | null>(null);
   const [currentQuery, setCurrentQuery] = useState('');

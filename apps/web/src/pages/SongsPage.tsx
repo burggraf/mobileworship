@@ -1,16 +1,31 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSongs, useAuth } from '@mobileworship/shared';
 import { CreateSongModal } from '../components/CreateSongModal';
+import { SearchHymnsModal } from '../components/SearchHymnsModal';
 
 export function SongsPage() {
   const { t } = useTranslation();
   const { songs, isLoading } = useSongs();
   const { can } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   if (isLoading) {
     return <div role="status" className="text-gray-500">{t('common.loading')}</div>;
@@ -35,12 +50,39 @@ export function SongsPage() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">{t('songs.title')}</h2>
         {can('songs:write') && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
-          >
-            {t('songs.addSong')}
-          </button>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition flex items-center gap-2"
+            >
+              {t('songs.addSong')}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700 py-1 z-10">
+                <button
+                  onClick={() => {
+                    setShowCreate(true);
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                >
+                  {t('songs.addMenu.pasteLyrics')}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSearch(true);
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                >
+                  {t('songs.addMenu.searchDatabase')}
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -117,6 +159,11 @@ export function SongsPage() {
       <CreateSongModal
         isOpen={showCreate}
         onClose={() => setShowCreate(false)}
+      />
+
+      <SearchHymnsModal
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
       />
     </div>
   );
