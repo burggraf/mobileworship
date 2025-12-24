@@ -191,14 +191,17 @@ export type Database = {
         Row: {
           author: string | null
           ccli_song_id: string | null
-          church_id: string
+          church_id: string | null
+          composer: string | null
           created_at: string | null
           default_arrangement: Json | null
           default_background_id: string | null
           id: string
+          is_public_domain: boolean | null
           key: string | null
           last_used_at: string | null
           lyrics: string
+          source_url: string | null
           tags: string[] | null
           tempo: number | null
           title: string
@@ -207,14 +210,17 @@ export type Database = {
         Insert: {
           author?: string | null
           ccli_song_id?: string | null
-          church_id: string
+          church_id?: string | null
+          composer?: string | null
           created_at?: string | null
           default_arrangement?: Json | null
           default_background_id?: string | null
           id?: string
+          is_public_domain?: boolean | null
           key?: string | null
           last_used_at?: string | null
           lyrics?: string
+          source_url?: string | null
           tags?: string[] | null
           tempo?: number | null
           title: string
@@ -223,14 +229,17 @@ export type Database = {
         Update: {
           author?: string | null
           ccli_song_id?: string | null
-          church_id?: string
+          church_id?: string | null
+          composer?: string | null
           created_at?: string | null
           default_arrangement?: Json | null
           default_background_id?: string | null
           id?: string
+          is_public_domain?: boolean | null
           key?: string | null
           last_used_at?: string | null
           lyrics?: string
+          source_url?: string | null
           tags?: string[] | null
           tempo?: number | null
           title?: string
