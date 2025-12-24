@@ -9,6 +9,7 @@ import { DashboardLayout } from './pages/DashboardLayout';
 import { SongsPage } from './pages/SongsPage';
 import { SongDetailPage } from './pages/SongDetailPage';
 import { EventsPage } from './pages/EventsPage';
+import { EventDetailPage } from './pages/EventDetailPage';
 import { MediaPage } from './pages/MediaPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ControlPage } from './pages/ControlPage';
@@ -42,6 +43,7 @@ export function App() {
                 <Route path="songs" element={<SongsPage />} />
                 <Route path="songs/:id" element={<SongDetailPage />} />
                 <Route path="events" element={<EventsPage />} />
+                <Route path="events/:id" element={<EventDetailPage />} />
                 <Route path="media" element={<MediaPage />} />
                 <Route path="settings" element={<SettingsPage />} />
               </Route>
