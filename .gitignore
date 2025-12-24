@@ -28,7 +28,10 @@ Thumbs.db
 apps/client/ios/Pods/
 apps/client/android/.gradle/
 apps/client/android/app/build/
+apps/host/android/.gradle/
+apps/host/android/app/build/
 apps/host/windows/packages/
+*.keystore
 apps/host/macos/Pods/
 apps/tv/tvos/Pods/
 apps/tv/android-tv/.gradle/
