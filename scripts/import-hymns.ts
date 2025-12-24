@@ -1,10 +1,10 @@
-#!/usr/bin/env -S deno run --allow-net --allow-env --allow-read
+#!/usr/bin/env -S deno run --allow-net --allow-env --allow-read --allow-write
 
 /**
  * CLI script to import hymns from HymnsToGod.org into Supabase.
  *
  * Usage:
- *   deno run --allow-net --allow-env --allow-read scripts/import-hymns.ts [options]
+ *   deno run --allow-net --allow-env --allow-read --allow-write scripts/import-hymns.ts [options]
  *
  * Options:
  *   --limit=N       Only import first N hymns (for testing)
