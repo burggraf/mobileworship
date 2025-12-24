@@ -164,6 +164,24 @@
     "delete": "Eliminar",
     "image": "imagen",
     "video": "video",
+    "tabs": {
+      "myMedia": "Mis Medios",
+      "freeBackgrounds": "Fondos Gratuitos"
+    },
+    "backgrounds": {
+      "searchPlaceholder": "Buscar fondos...",
+      "search": "Buscar",
+      "import": "Importar a la Biblioteca",
+      "importing": "Importando...",
+      "noResults": "No se encontraron fondos para '{{query}}'. Intenta otro término.",
+      "rateLimited": "Demasiadas solicitudes. Prueba otra fuente o espera un momento.",
+      "importError": "Error al importar el fondo. Por favor, inténtalo de nuevo.",
+      "importSuccess": "¡Fondo importado exitosamente!",
+      "photoBy": "Foto de {{name}} en {{source}}",
+      "loadMore": "Cargar Más",
+      "preview": "Vista Previa",
+      "suggestedSearches": "Búsquedas sugeridas"
+    },
     "picker": {
       "title": "Seleccionar Medio de Fondo",
       "noMedia": "No hay medios disponibles",
