@@ -37,6 +37,7 @@
     "@react-native/metro-config": "0.74.0",
     "@react-native/typescript-config": "0.74.0",
     "@types/react": "^18.3.0",
+    "babel-plugin-transform-inline-environment-variables": "^0.4.4",
     "tailwindcss": "3.3.2",
     "typescript": "^5.4.0"
   }
