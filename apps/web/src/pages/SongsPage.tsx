@@ -7,10 +7,26 @@ export function SongsPage() {
   const { songs, isLoading } = useSongs();
   const { can } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   if (isLoading) {
     return <div role="status" className="text-gray-500">Loading songs...</div>;
   }
+
+  // Filter songs based on search query and selected tag
+  const filteredSongs = songs.filter(song => {
+    const matchesSearch = !searchQuery ||
+      song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      song.author?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesTag = !selectedTag || song.tags?.includes(selectedTag);
+
+    return matchesSearch && matchesTag;
+  });
+
+  // Get unique tags from all songs
+  const allTags = [...new Set(songs.flatMap(s => s.tags || []))].sort();
 
   return (
     <div>
@@ -31,32 +47,69 @@ export function SongsPage() {
           <p>No songs yet. Add your first song to get started.</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {songs.map((song) => (
-            <Link
-              key={song.id}
-              to={`/dashboard/songs/${song.id}`}
-              className="p-4 border dark:border-gray-700 rounded-lg hover:border-primary-500 transition block"
+        <>
+          {/* Search and Filter Controls */}
+          <div className="flex gap-4 mb-4">
+            <input
+              type="text"
+              placeholder="Search songs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+            <select
+              value={selectedTag || ''}
+              onChange={(e) => setSelectedTag(e.target.value || null)}
+              className="px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
-              <h3 className="font-semibold">{song.title}</h3>
-              {song.author && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">{song.author}</p>
-              )}
-              {song.tags && song.tags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {song.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </Link>
-          ))}
-        </div>
+              <option value="">All Tags</option>
+              {allTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtered Count */}
+          <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            Showing {filteredSongs.length} of {songs.length} songs
+          </div>
+
+          {/* Song Grid */}
+          {filteredSongs.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <p>No songs match your search criteria.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredSongs.map((song) => (
+                <Link
+                  key={song.id}
+                  to={`/dashboard/songs/${song.id}`}
+                  className="p-4 border dark:border-gray-700 rounded-lg hover:border-primary-500 transition block"
+                >
+                  <h3 className="font-semibold">{song.title}</h3>
+                  {song.author && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{song.author}</p>
+                  )}
+                  {song.tags && song.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {song.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <CreateSongModal
