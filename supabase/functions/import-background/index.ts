@@ -28,16 +28,18 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // Use service role key to validate the user token
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
 
     // Get the current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
+    console.log("Auth result:", { user: user?.id, error: userError?.message });
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: "Unauthorized", details: userError?.message }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

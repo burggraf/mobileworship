@@ -46,3 +46,9 @@ verify_jwt = true
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.search-backgrounds]
+verify_jwt = false
+
+[functions.import-background]
+verify_jwt = true

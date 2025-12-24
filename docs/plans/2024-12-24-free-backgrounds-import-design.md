@@ -28,7 +28,7 @@ Add a "Free Backgrounds" tab to the MediaPage that allows users to search, previ
 ### Search Flow
 1. User selects source (defaults to Pexels)
 2. User types query or clicks suggested term
-3. Frontend calls source API directly (client-side with publishable keys)
+3. Frontend calls `search-backgrounds` edge function (API keys stored as Supabase secrets)
 4. Results displayed as thumbnails with lazy loading
 5. Pagination via "Load More" button
 
@@ -45,7 +45,8 @@ Add a "Free Backgrounds" tab to the MediaPage that allows users to search, previ
 
 ## API Integration
 
-### Environment Variables
+### Supabase Secrets
+Set via `supabase secrets set`:
 - `PEXELS_API_KEY`
 - `UNSPLASH_ACCESS_KEY`
 - `PIXABAY_API_KEY`
@@ -66,6 +67,27 @@ Add fields to `media` table (or use existing metadata column):
 - `source` - "unsplash" | "pexels" | "pixabay" | null
 - `attribution` - "Photo by John Smith" | null
 - `source_url` - Original page URL for compliance | null
+
+## Edge Function: `search-backgrounds`
+
+**Input:**
+```typescript
+{
+  source: 'unsplash' | 'pexels' | 'pixabay';
+  query: string;
+  page: number;
+}
+```
+
+**Output:**
+```typescript
+{
+  results: BackgroundSearchResult[];
+  totalResults: number;
+  hasMore: boolean;
+  nextPage: number;
+}
+```
 
 ## Edge Function: `import-background`
 

@@ -9,6 +9,13 @@ export function useImportBackground() {
 
   return useMutation({
     mutationFn: async (background: BackgroundSearchResult) => {
+      // Get session and explicitly pass auth header
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session:', session ? `exists, expires: ${session.expires_at}` : 'null');
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       const { data, error } = await supabase.functions.invoke('import-background', {
         body: {
           sourceUrl: background.fullUrl,
@@ -17,9 +24,15 @@ export function useImportBackground() {
           photographerUrl: background.photographerUrl,
           sourcePageUrl: background.sourcePageUrl,
         },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Import error:', error, 'Response:', data);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
