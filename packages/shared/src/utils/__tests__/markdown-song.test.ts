@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSongMarkdown, buildSongMarkdown, type ParsedSong } from '../markdown-song';
+import { parseSongMarkdown, buildSongMarkdown, songToSlides, type ParsedSong } from '../markdown-song';
 
 describe('parseSongMarkdown', () => {
   it('parses minimal song with just title', () => {
@@ -211,5 +211,68 @@ Was blind but now I see`;
     expect(reparsed.metadata.author).toBe(parsed.metadata.author);
     expect(reparsed.sections.length).toBe(parsed.sections.length);
     expect(reparsed.sections[0].lines).toEqual(parsed.sections[0].lines);
+  });
+});
+
+describe('songToSlides', () => {
+  it('splits sections into slides', () => {
+    const markdown = `---
+title: Test
+---
+
+# Verse
+Line 1
+Line 2
+Line 3
+Line 4
+Line 5
+Line 6`;
+
+    const slides = songToSlides(markdown, 4);
+
+    expect(slides).toHaveLength(2);
+    expect(slides[0].sectionLabel).toBe('Verse 1');
+    expect(slides[0].lines).toEqual(['Line 1', 'Line 2', 'Line 3', 'Line 4']);
+    expect(slides[1].sectionLabel).toBe('Verse 1');
+    expect(slides[1].lines).toEqual(['Line 5', 'Line 6']);
+  });
+
+  it('handles multiple sections', () => {
+    const markdown = `---
+title: Test
+---
+
+# Verse
+Verse line 1
+Verse line 2
+
+# Chorus
+Chorus line 1
+Chorus line 2`;
+
+    const slides = songToSlides(markdown, 4);
+
+    expect(slides).toHaveLength(2);
+    expect(slides[0].sectionLabel).toBe('Verse 1');
+    expect(slides[1].sectionLabel).toBe('Chorus 1');
+  });
+
+  it('includes slide indices', () => {
+    const markdown = `---
+title: Test
+---
+
+# Verse
+Line 1
+Line 2
+
+# Chorus
+Line 1
+Line 2`;
+
+    const slides = songToSlides(markdown, 4);
+
+    expect(slides[0].index).toBe(0);
+    expect(slides[1].index).toBe(1);
   });
 });

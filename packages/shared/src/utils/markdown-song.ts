@@ -196,3 +196,31 @@ export function buildSongMarkdown(song: ParsedSong): string {
 
   return lines.join('\n').trim();
 }
+
+export interface Slide {
+  sectionLabel: string;
+  lines: string[];
+  index: number;
+}
+
+/**
+ * Convert song markdown to array of slides for display
+ */
+export function songToSlides(markdown: string, linesPerSlide = 4): Slide[] {
+  const parsed = parseSongMarkdown(markdown);
+  const slides: Slide[] = [];
+  let index = 0;
+
+  for (const section of parsed.sections) {
+    // Split section lines into chunks
+    for (let i = 0; i < section.lines.length; i += linesPerSlide) {
+      slides.push({
+        sectionLabel: section.label,
+        lines: section.lines.slice(i, i + linesPerSlide),
+        index: index++,
+      });
+    }
+  }
+
+  return slides;
+}
