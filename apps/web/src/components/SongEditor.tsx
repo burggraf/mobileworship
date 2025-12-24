@@ -1,204 +1,222 @@
-import type { SongContent, SongSection, SectionType } from '@mobileworship/shared';
+import { useState } from 'react';
+import type { SongMetadata } from '@mobileworship/shared';
 
 interface SongEditorProps {
-  content: SongContent;
-  onChange: (content: SongContent) => void;
+  lyrics: string;
+  metadata: SongMetadata;
+  onLyricsChange: (lyrics: string) => void;
+  onMetadataChange: (metadata: SongMetadata) => void;
   readOnly?: boolean;
 }
 
-const SECTION_TYPES: SectionType[] = [
-  'verse',
-  'chorus',
-  'bridge',
-  'pre-chorus',
-  'tag',
-  'intro',
-  'outro',
-];
+const KEY_OPTIONS = ['', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',
+                     'Cm', 'C#m', 'Dm', 'D#m', 'Em', 'Fm', 'F#m', 'Gm', 'G#m', 'Am', 'A#m', 'Bm'];
 
-export function SongEditor({ content, onChange, readOnly = false }: SongEditorProps) {
-  const handleSectionChange = (index: number, updates: Partial<SongSection>) => {
-    const newSections = [...content.sections];
-    newSections[index] = { ...newSections[index], ...updates };
-    onChange({ sections: newSections });
+export function SongEditor({
+  lyrics,
+  metadata,
+  onLyricsChange,
+  onMetadataChange,
+  readOnly = false,
+}: SongEditorProps) {
+  const [tagInput, setTagInput] = useState('');
+
+  const updateMetadata = (updates: Partial<SongMetadata>) => {
+    onMetadataChange({ ...metadata, ...updates });
   };
 
-  const handleLinesChange = (index: number, linesText: string) => {
-    const lines = linesText.split('\n');
-    handleSectionChange(index, { lines });
-  };
-
-  const moveSection = (index: number, direction: 'up' | 'down') => {
-    if (
-      (direction === 'up' && index === 0) ||
-      (direction === 'down' && index === content.sections.length - 1)
-    ) {
-      return;
+  const addTag = () => {
+    const tag = tagInput.trim().toLowerCase();
+    if (tag && !metadata.tags?.includes(tag)) {
+      updateMetadata({ tags: [...(metadata.tags || []), tag] });
+      setTagInput('');
     }
-
-    const newSections = [...content.sections];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    [newSections[index], newSections[targetIndex]] = [
-      newSections[targetIndex],
-      newSections[index],
-    ];
-    onChange({ sections: newSections });
   };
 
-  const deleteSection = (index: number) => {
-    const newSections = content.sections.filter((_, i) => i !== index);
-    onChange({ sections: newSections });
+  const removeTag = (tagToRemove: string) => {
+    updateMetadata({
+      tags: metadata.tags?.filter((t) => t !== tagToRemove),
+    });
   };
 
-  const addSection = () => {
-    const newSections = [
-      ...content.sections,
-      {
-        type: 'verse' as SectionType,
-        label: `Verse ${content.sections.filter((s) => s.type === 'verse').length + 1}`,
-        lines: [],
-      },
-    ];
-    onChange({ sections: newSections });
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
+    }
   };
 
   return (
-    <div className="space-y-4">
-      {content.sections.map((section, index) => (
-        <div
-          key={`${section.type}-${section.label}-${index}`}
-          className="border dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50"
-        >
-          <div className="flex items-start gap-3 mb-3">
-            {/* Section Type Dropdown */}
-            <div className="flex-shrink-0">
-              <label className="block text-xs font-medium mb-1">Type</label>
-              <select
-                value={section.type}
-                onChange={(e) =>
-                  handleSectionChange(index, { type: e.target.value as SectionType })
-                }
-                disabled={readOnly}
-                className="px-2 py-1 text-sm border dark:border-gray-700 rounded bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {SECTION_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
+    <div className="space-y-6">
+      {/* Metadata Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Title */}
+        <div className="md:col-span-2">
+          <label htmlFor="title" className="block text-sm font-medium mb-1">
+            Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={metadata.title}
+            onChange={(e) => updateMetadata({ title: e.target.value })}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
+            placeholder="Song title"
+          />
+        </div>
 
-            {/* Label Input */}
-            <div className="flex-1">
-              <label className="block text-xs font-medium mb-1">Label</label>
+        {/* Author */}
+        <div className="md:col-span-2">
+          <label htmlFor="author" className="block text-sm font-medium mb-1">
+            Author
+          </label>
+          <input
+            id="author"
+            type="text"
+            value={metadata.author || ''}
+            onChange={(e) => updateMetadata({ author: e.target.value || undefined })}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
+            placeholder="Song author"
+          />
+        </div>
+
+        {/* Key */}
+        <div>
+          <label htmlFor="key" className="block text-sm font-medium mb-1">
+            Key
+          </label>
+          <select
+            id="key"
+            value={metadata.key || ''}
+            onChange={(e) => updateMetadata({ key: e.target.value || undefined })}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
+          >
+            {KEY_OPTIONS.map((k) => (
+              <option key={k} value={k}>
+                {k || 'Select key...'}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Tempo */}
+        <div>
+          <label htmlFor="tempo" className="block text-sm font-medium mb-1">
+            Tempo (BPM)
+          </label>
+          <input
+            id="tempo"
+            type="number"
+            min="20"
+            max="300"
+            value={metadata.tempo || ''}
+            onChange={(e) => updateMetadata({ tempo: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
+            placeholder="72"
+          />
+        </div>
+
+        {/* CCLI */}
+        <div>
+          <label htmlFor="ccli" className="block text-sm font-medium mb-1">
+            CCLI Song #
+          </label>
+          <input
+            id="ccli"
+            type="text"
+            value={metadata.ccli || ''}
+            onChange={(e) => updateMetadata({ ccli: e.target.value || undefined })}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50"
+            placeholder="1234567"
+          />
+        </div>
+
+        {/* Tags */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Tags</label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {metadata.tags?.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm"
+              >
+                {tag}
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="text-gray-500 hover:text-red-500"
+                  >
+                    &times;
+                  </button>
+                )}
+              </span>
+            ))}
+          </div>
+          {!readOnly && (
+            <div className="flex gap-2">
               <input
                 type="text"
-                value={section.label}
-                onChange={(e) => handleSectionChange(index, { label: e.target.value })}
-                disabled={readOnly}
-                className="w-full px-2 py-1 text-sm border dark:border-gray-700 rounded bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder="Section label"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                className="flex-1 px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 text-sm"
+                placeholder="Add tag..."
               />
+              <button
+                type="button"
+                onClick={addTag}
+                className="px-3 py-2 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+              >
+                Add
+              </button>
             </div>
-
-            {/* Action Buttons */}
-            {!readOnly && (
-              <div className="flex-shrink-0 flex gap-1 mt-5">
-                <button
-                  type="button"
-                  onClick={() => moveSection(index, 'up')}
-                  disabled={index === 0}
-                  className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                  title="Move up"
-                  aria-label="Move up"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 15l7-7 7 7"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => moveSection(index, 'down')}
-                  disabled={index === content.sections.length - 1}
-                  className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                  title="Move down"
-                  aria-label="Move down"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteSection(index)}
-                  className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                  title="Delete section"
-                  aria-label="Delete section"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Lines Textarea */}
-          <div>
-            <label className="block text-xs font-medium mb-1">Lines</label>
-            <textarea
-              value={section.lines.join('\n')}
-              onChange={(e) => handleLinesChange(index, e.target.value)}
-              disabled={readOnly}
-              rows={Math.max(3, section.lines.length + 1)}
-              className="w-full px-3 py-2 border dark:border-gray-700 rounded bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 disabled:cursor-not-allowed font-mono text-sm"
-              placeholder="Enter lyrics lines (one per line)"
-            />
-          </div>
+          )}
         </div>
-      ))}
+      </div>
 
-      {/* Add Section Button */}
-      {!readOnly && (
-        <button
-          type="button"
-          onClick={addSection}
-          className="w-full py-3 border-2 border-dashed dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition"
-        >
-          + Add Section
-        </button>
-      )}
+      {/* Lyrics Section */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label htmlFor="lyrics" className="block text-sm font-medium">
+            Lyrics
+          </label>
+          {!readOnly && (
+            <button
+              type="button"
+              className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
+              title="AI Format (coming soon)"
+              disabled
+            >
+              <span>AI</span>
+              <span>✨</span>
+            </button>
+          )}
+        </div>
+        <textarea
+          id="lyrics"
+          value={lyrics}
+          onChange={(e) => onLyricsChange(e.target.value)}
+          disabled={readOnly}
+          rows={16}
+          className="w-full px-3 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 font-mono text-sm"
+          placeholder={`# Verse
+Amazing grace how sweet the sound
+That saved a wretch like me
+
+# Chorus
+I once was lost but now am found
+Was blind but now I see`}
+        />
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          Use # headers for sections: # Verse, # Chorus, # Bridge, etc.
+        </p>
+      </div>
     </div>
   );
 }
