@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useSongs, useAuth, useMedia, parseSongMarkdown, buildSongMarkdown } from '@mobileworship/shared';
+import { useSongs, useAuth, useMedia, useSupabase, parseSongMarkdown, buildSongMarkdown } from '@mobileworship/shared';
 import type { SongMetadata } from '@mobileworship/shared';
 import { SongEditor } from '../components/SongEditor';
 import { MediaPicker } from '../components/MediaPicker';
@@ -8,6 +8,7 @@ import { MediaPicker } from '../components/MediaPicker';
 export function SongDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const supabase = useSupabase();
   const { songs, updateSong, deleteSong } = useSongs();
   const { can } = useAuth();
   const { media, getPublicUrl } = useMedia();
@@ -21,6 +22,7 @@ export function SongDetailPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+  const [isAIFormatting, setIsAIFormatting] = useState(false);
 
   // Parse song lyrics on load
   useEffect(() => {
@@ -84,11 +86,12 @@ export function SongDetailPage() {
     }
 
     try {
-      // Build full markdown
-      const fullMarkdown = buildSongMarkdown({
+      // Build full markdown by combining frontmatter with lyrics body
+      const frontmatter = buildSongMarkdown({
         metadata,
-        sections: [], // Sections are in the lyrics body
-      }).replace(/---\n\n$/, `---\n\n${lyrics}`);
+        sections: [],
+      }).trim();
+      const fullMarkdown = `${frontmatter}\n\n${lyrics}`;
 
       await updateSong.mutateAsync({
         id,
@@ -118,6 +121,40 @@ export function SongDetailPage() {
       navigate('/dashboard/songs');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete song');
+    }
+  };
+
+  const handleAIFormat = async () => {
+    if (!lyrics.trim()) return;
+    setError(null);
+    setIsAIFormatting(true);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('ai-format-lyrics', {
+        body: {
+          rawText: lyrics,
+          hints: {
+            title: metadata.title,
+            author: metadata.author,
+          },
+        },
+      });
+
+      if (fnError) throw fnError;
+
+      // Convert JSON sections to markdown format
+      const sections = data?.sections || [];
+      const formattedLyrics = sections
+        .map((section: { label: string; lines: string[] }) => {
+          return `# ${section.label}\n${section.lines.join('\n')}`;
+        })
+        .join('\n\n');
+
+      setLyrics(formattedLyrics);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to format lyrics with AI');
+    } finally {
+      setIsAIFormatting(false);
     }
   };
 
@@ -171,6 +208,8 @@ export function SongDetailPage() {
         lyrics={lyrics}
         onMetadataChange={setMetadata}
         onLyricsChange={setLyrics}
+        onAIFormat={handleAIFormat}
+        isAIFormatting={isAIFormatting}
         readOnly={!canEdit || isSaving || isDeleting}
       />
 

@@ -6,6 +6,8 @@ interface SongEditorProps {
   metadata: SongMetadata;
   onLyricsChange: (lyrics: string) => void;
   onMetadataChange: (metadata: SongMetadata) => void;
+  onAIFormat?: () => Promise<void>;
+  isAIFormatting?: boolean;
   readOnly?: boolean;
 }
 
@@ -17,6 +19,8 @@ export function SongEditor({
   metadata,
   onLyricsChange,
   onMetadataChange,
+  onAIFormat,
+  isAIFormatting = false,
   readOnly = false,
 }: SongEditorProps) {
   const [tagInput, setTagInput] = useState('');
@@ -186,15 +190,25 @@ export function SongEditor({
           <label htmlFor="lyrics" className="block text-sm font-medium">
             Lyrics
           </label>
-          {!readOnly && (
+          {!readOnly && onAIFormat && (
             <button
               type="button"
-              className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
-              title="AI Format (coming soon)"
-              disabled
+              onClick={onAIFormat}
+              disabled={isAIFormatting || !lyrics.trim()}
+              className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Format lyrics with AI"
             >
-              <span>AI</span>
-              <span>✨</span>
+              {isAIFormatting ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  <span>Formatting...</span>
+                </>
+              ) : (
+                <>
+                  <span>AI</span>
+                  <span>✨</span>
+                </>
+              )}
             </button>
           )}
         </div>
