@@ -116,19 +116,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    // TV overscan safe area - ~5% margins (54px at 1080p)
+    paddingTop: 54,
+    paddingBottom: 54,
+    paddingHorizontal: 96,
   },
   title: {
     fontSize: 48,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 40,
+    marginBottom: 24,
   },
   qrContainer: {
-    padding: 20,
+    padding: 16,
     backgroundColor: '#000',
     borderRadius: 16,
-    marginBottom: 30,
+    marginBottom: 20,
   },
   codeLabel: {
     fontSize: 18,
@@ -140,7 +143,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     letterSpacing: 8,
-    marginBottom: 40,
+    marginBottom: 24,
   },
   instructions: {
     fontSize: 16,

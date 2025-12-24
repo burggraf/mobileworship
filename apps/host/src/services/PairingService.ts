@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Dimensions } from 'react-native';
-import type { DeviceInfo, DisplaySettings } from '@mobileworship/shared';
-import Config from 'react-native-config';
+import type { DeviceInfo, DisplaySettings } from '../types';
+import { Config } from '../config';
 
 const DISPLAY_ID_KEY = '@mobileworship/display_id';
 
@@ -21,11 +21,6 @@ interface VerifyResponse {
 
 export class PairingService {
   private displayId: string | null = null;
-  private supabaseFunctionsUrl: string;
-
-  constructor() {
-    this.supabaseFunctionsUrl = (Config.SUPABASE_URL || '') + '/functions/v1';
-  }
 
   async initialize(): Promise<{ paired: boolean; displayId?: string; name?: string; churchId?: string; settings?: DisplaySettings }> {
     const storedId = await AsyncStorage.getItem(DISPLAY_ID_KEY);
@@ -56,9 +51,13 @@ export class PairingService {
       resolution: { width, height },
     };
 
-    const response = await fetch(`${this.supabaseFunctionsUrl}/display-pairing`, {
+    const response = await fetch(`${Config.SUPABASE_FUNCTIONS_URL}/display-pairing`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Config.SUPABASE_ANON_KEY}`,
+        'apikey': Config.SUPABASE_ANON_KEY,
+      },
       body: JSON.stringify({ action: 'generate', deviceInfo }),
     });
 
@@ -73,9 +72,13 @@ export class PairingService {
 
   async verify(displayId: string): Promise<VerifyResponse> {
     try {
-      const response = await fetch(`${this.supabaseFunctionsUrl}/display-pairing`, {
+      const response = await fetch(`${Config.SUPABASE_FUNCTIONS_URL}/display-pairing`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Config.SUPABASE_ANON_KEY}`,
+          'apikey': Config.SUPABASE_ANON_KEY,
+        },
         body: JSON.stringify({ action: 'verify', displayId }),
       });
 

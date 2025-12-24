@@ -1,22 +1,25 @@
 import { createClient, RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
-import type { ClientCommand, HostState, HostStatus } from '@mobileworship/protocol';
-import { getDisplayChannel } from '@mobileworship/protocol';
-import Config from 'react-native-config';
+import type { ClientCommand, HostState, HostStatus } from '../types';
+import { getDisplayChannel } from '../types';
+import { Config } from '../config';
 
 type CommandHandler = (command: ClientCommand) => void;
 type ClaimHandler = (name: string, churchId: string) => void;
 
 export class RealtimeService {
-  private supabase: SupabaseClient;
+  private supabase: SupabaseClient | null = null;
   private channel: RealtimeChannel | null = null;
   private displayId: string | null = null;
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
 
-  constructor() {
-    this.supabase = createClient(
-      Config.SUPABASE_URL || '',
-      Config.SUPABASE_ANON_KEY || ''
-    );
+  private getSupabase(): SupabaseClient {
+    if (!this.supabase) {
+      this.supabase = createClient(
+        Config.SUPABASE_URL,
+        Config.SUPABASE_ANON_KEY
+      );
+    }
+    return this.supabase;
   }
 
   async connect(
@@ -26,7 +29,8 @@ export class RealtimeService {
   ): Promise<void> {
     this.displayId = displayId;
 
-    this.channel = this.supabase.channel(getDisplayChannel(displayId));
+    const supabase = this.getSupabase();
+    this.channel = supabase.channel(getDisplayChannel(displayId));
 
     this.channel.on('broadcast', { event: 'command' }, ({ payload }) => {
       onCommand(payload as ClientCommand);
@@ -78,7 +82,8 @@ export class RealtimeService {
   private startHeartbeat(): void {
     this.heartbeatInterval = setInterval(async () => {
       if (this.displayId) {
-        await this.supabase
+        const supabase = this.getSupabase();
+        await supabase
           .from('displays')
           .update({ last_seen_at: new Date().toISOString() })
           .eq('id', this.displayId);
