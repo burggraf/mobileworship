@@ -41,67 +41,104 @@ export function parseHymnPage(html: string, sourceUrl: string): ParsedHymn | nul
     // Clean title - remove site name suffix if present
     const title = rawTitle.replace(/\s*[-|].*$/, '').trim();
 
-    // Extract author (lyricist) - look for "Lyrics:" or "Words:" pattern
-    const authorMatch = html.match(/(?:Lyrics|Words)[:\s]*([^<\n]+)/i);
-    const author = authorMatch?.[1]?.trim().replace(/^by\s+/i, '') || null;
+    // Extract author (lyricist) - HymnsToGod.org has names in <a> tags after "Lyrics:" header
+    // Pattern: <th>Lyrics:</th><td...><a href="...">Author Name</a></td>
+    const authorMatch = html.match(/Lyrics:<\/th>\s*<td[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i) ||
+                        html.match(/Words:<\/th>\s*<td[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i) ||
+                        html.match(/by\s+([A-Z][a-z]+(?:\s+[A-Z]\.?\s*)?[A-Z][a-z]+)/);
+    const author = authorMatch?.[1]?.trim() || null;
 
-    // Extract composer - look for "Music:" or "Tune:" pattern
-    const composerMatch = html.match(/(?:Music|Tune|Composer)[:\s]*([^<\n]+)/i);
+    // Extract composer - HymnsToGod.org has names in <a> tags after "Music:" header
+    const composerMatch = html.match(/Music:<\/th>\s*<td[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i) ||
+                          html.match(/Tune:<\/th>\s*<td[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i);
     const composer = composerMatch?.[1]?.trim() || null;
 
-    // Extract lyrics - find the main content area
-    // HymnsToGod uses plain text between metadata and footer
+    // Extract lyrics - HymnsToGod.org uses <div ID="Lyrics"> with <p> tags for verses
     let lyrics = '';
 
-    // Try to find lyrics in a pre tag or main content div
-    const preMatch = html.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i);
-    if (preMatch) {
-      lyrics = preMatch[1];
-    } else {
-      // Extract text between common boundaries
-      // Look for content after metadata, before footer/navigation
-      const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-      if (bodyMatch) {
-        let content = bodyMatch[1];
-        // Remove script, style, nav elements
-        content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
-        content = content.replace(/<style[\s\S]*?<\/style>/gi, '');
-        content = content.replace(/<nav[\s\S]*?<\/nav>/gi, '');
-        // Remove HTML tags but keep line breaks
-        content = content.replace(/<br\s*\/?>/gi, '\n');
-        content = content.replace(/<\/p>/gi, '\n\n');
-        content = content.replace(/<\/div>/gi, '\n');
-        content = content.replace(/<[^>]+>/g, '');
-        // Decode HTML entities
-        content = content.replace(/&nbsp;/g, ' ');
-        content = content.replace(/&amp;/g, '&');
-        content = content.replace(/&lt;/g, '<');
-        content = content.replace(/&gt;/g, '>');
-        content = content.replace(/&quot;/g, '"');
-        content = content.replace(/&apos;/g, "'");
-        content = content.replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code)));
-        content = content.replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    // First try: Look for the specific Lyrics div used by HymnsToGod.org
+    const lyricsDiv = html.match(/<div[^>]*ID="Lyrics"[^>]*>([\s\S]*?)<\/div>/i);
+    if (lyricsDiv) {
+      let content = lyricsDiv[1];
+      // Skip the title and author lines at the start (first two <p> tags with w3-center class)
+      content = content.replace(/<p[^>]*class="[^"]*w3-center[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '');
+      // Convert <br> to newlines
+      content = content.replace(/<br\s*\/?>/gi, '\n');
+      // Add verse separator between </p> and <p>
+      content = content.replace(/<\/p>\s*<p>/gi, '\n\nVERSE_BREAK\n\n');
+      // Remove remaining HTML tags
+      content = content.replace(/<[^>]+>/g, '');
+      // Decode HTML entities
+      content = content.replace(/&nbsp;/g, ' ');
+      content = content.replace(/&amp;/g, '&');
+      content = content.replace(/&lt;/g, '<');
+      content = content.replace(/&gt;/g, '>');
+      content = content.replace(/&quot;/g, '"');
+      content = content.replace(/&apos;/g, "'");
+      content = content.replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(parseInt(code)));
+      content = content.replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
 
-        // Find the lyrics section - usually after metadata, contains numbered verses
-        const lines = content.split('\n').map(l => l.trim()).filter(l => l);
-        let inLyrics = false;
-        const lyricLines: string[] = [];
+      // Process verses - split by VERSE_BREAK and number them
+      const verses = content.split('VERSE_BREAK').map(v => v.trim()).filter(v => v);
+      const numberedVerses: string[] = [];
+      let verseNum = 1;
 
-        for (const line of lines) {
-          // Start capturing at first verse number
-          if (/^[1IVX][\.\)]/.test(line) || /^verse\s*\d/i.test(line)) {
-            inLyrics = true;
-          }
-          // Stop at footer markers
-          if (/copyright|all rights|hymns to god|public domain/i.test(line) && inLyrics) {
-            break;
-          }
-          if (inLyrics) {
-            lyricLines.push(line);
+      for (const verse of verses) {
+        // Check if this is a Refrain/Chorus marker
+        if (/^(refrain|chorus)$/i.test(verse.trim())) {
+          numberedVerses.push('Chorus:');
+        } else if (verse.trim()) {
+          // Check if verse already has a number or is the chorus content
+          const prevWasChorusMarker = numberedVerses.length > 0 &&
+            /^(refrain|chorus):?$/i.test(numberedVerses[numberedVerses.length - 1]);
+
+          if (prevWasChorusMarker) {
+            // This is the chorus content, don't number it
+            numberedVerses[numberedVerses.length - 1] = `Chorus:\n${verse}`;
+          } else {
+            numberedVerses.push(`${verseNum}.\n${verse}`);
+            verseNum++;
           }
         }
+      }
 
-        lyrics = lyricLines.join('\n');
+      lyrics = numberedVerses.join('\n\n');
+    } else {
+      // Fallback: Try to find lyrics in a pre tag or parse body content
+      const preMatch = html.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i);
+      if (preMatch) {
+        lyrics = preMatch[1];
+      } else {
+        // Extract from body as last resort
+        const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        if (bodyMatch) {
+          let content = bodyMatch[1];
+          content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
+          content = content.replace(/<style[\s\S]*?<\/style>/gi, '');
+          content = content.replace(/<br\s*\/?>/gi, '\n');
+          content = content.replace(/<\/p>/gi, '\n\n');
+          content = content.replace(/<[^>]+>/g, '');
+          content = content.replace(/&nbsp;/g, ' ');
+          content = content.replace(/&amp;/g, '&');
+
+          // Find lyrics by looking for verse-like content
+          const lines = content.split('\n').map(l => l.trim()).filter(l => l);
+          let inLyrics = false;
+          const lyricLines: string[] = [];
+
+          for (const line of lines) {
+            if (/^[1IVX][\.\)]/.test(line) || /^verse\s*\d/i.test(line)) {
+              inLyrics = true;
+            }
+            if (/copyright|all rights|hymns to god|page design/i.test(line) && inLyrics) {
+              break;
+            }
+            if (inLyrics) {
+              lyricLines.push(line);
+            }
+          }
+          lyrics = lyricLines.join('\n');
+        }
       }
     }
 
