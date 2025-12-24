@@ -18,6 +18,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, churchName: string) => Promise<void>;
   signOut: () => Promise<void>;
+  resetPasswordForEmail: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
   can: (permission: Permission) => boolean;
 }
 
@@ -125,13 +127,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }
 
+  async function resetPasswordForEmail(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw error;
+  }
+
+  async function updatePassword(password: string) {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+  }
+
   function can(permission: Permission): boolean {
     if (!user) return false;
     return hasPermission(user.role, permission);
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut, can }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, signIn, signUp, signOut, resetPasswordForEmail, updatePassword, can }}
+    >
       {children}
     </AuthContext.Provider>
   );

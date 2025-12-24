@@ -14,6 +14,7 @@ import { MediaPage } from './pages/MediaPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ControlPage } from './pages/ControlPage';
 import { PresentationPage } from './pages/PresentationPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -41,6 +42,7 @@ export function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/dashboard" element={<DashboardLayout />}>
                   <Route index element={<SongsPage />} />
                   <Route path="songs" element={<SongsPage />} />
