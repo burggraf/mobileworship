@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useSongs, useAuth } from '@mobileworship/shared';
+import { CreateSongModal } from '../components/CreateSongModal';
 
 export function SongsPage() {
-  const { songs, isLoading, createSong, deleteSong } = useSongs();
+  const { songs, isLoading } = useSongs();
   const { can } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
 
@@ -56,7 +57,10 @@ export function SongsPage() {
         </div>
       )}
 
-      {/* TODO: Add CreateSongModal component */}
+      <CreateSongModal
+        isOpen={showCreate}
+        onClose={() => setShowCreate(false)}
+      />
     </div>
   );
 }
