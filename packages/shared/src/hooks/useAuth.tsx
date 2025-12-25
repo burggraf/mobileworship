@@ -172,9 +172,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (rpcError) throw rpcError;
 
+      const result = rpcResult as { church_id: string; user_id: string };
+
       // Update JWT with new church ID
       await supabase.auth.updateUser({
-        data: { current_church_id: rpcResult.church_id },
+        data: { current_church_id: result.church_id },
       });
 
       await fetchUserProfile(authData.user);

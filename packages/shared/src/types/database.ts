@@ -50,6 +50,48 @@ export type Database = {
         }
         Relationships: []
       }
+      church_memberships: {
+        Row: {
+          id: string
+          church_id: string
+          user_id: string
+          role: string
+          last_accessed_at: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          church_id: string
+          user_id: string
+          role?: string
+          last_accessed_at?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          church_id?: string
+          user_id?: string
+          role?: string
+          last_accessed_at?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "church_memberships_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "church_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       displays: {
         Row: {
           church_id: string | null
@@ -147,6 +189,57 @@ export type Database = {
             columns: ["church_id"]
             isOneToOne: false
             referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          id: string
+          church_id: string
+          email: string
+          role: string
+          invited_by: string
+          token: string
+          expires_at: string
+          accepted_at: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          church_id: string
+          email: string
+          role?: string
+          invited_by: string
+          token?: string
+          expires_at?: string
+          accepted_at?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          church_id?: string
+          email?: string
+          role?: string
+          invited_by?: string
+          token?: string
+          expires_at?: string
+          accepted_at?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -327,44 +420,36 @@ export type Database = {
       }
       users: {
         Row: {
-          church_id: string
           created_at: string | null
           email: string
           id: string
           name: string
-          role: string
         }
         Insert: {
-          church_id: string
           created_at?: string | null
           email: string
           id: string
           name: string
-          role?: string
         }
         Update: {
-          church_id?: string
           created_at?: string | null
           email?: string
           id?: string
           name?: string
-          role?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "users_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "churches"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation: {
+        Args: {
+          p_token: string
+        }
+        Returns: Json
+      }
       create_church_and_user: {
         Args: {
           p_church_name: string
@@ -374,8 +459,27 @@ export type Database = {
         }
         Returns: Json
       }
-      get_user_church_id: { Args: never; Returns: string }
-      get_user_role: { Args: never; Returns: string }
+      delete_church: {
+        Args: {
+          p_church_id: string
+          p_confirmation: string
+        }
+        Returns: boolean
+      }
+      get_admin_count: {
+        Args: {
+          p_church_id: string
+        }
+        Returns: number
+      }
+      get_user_church_id: { Args: Record<string, never>; Returns: string }
+      get_user_role: { Args: Record<string, never>; Returns: string }
+      set_current_church: {
+        Args: {
+          p_church_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
@@ -758,7 +862,7 @@ export type Database = {
       get_prefix: { Args: { name: string }; Returns: string }
       get_prefixes: { Args: { name: string }; Returns: string[] }
       get_size_by_bucket: {
-        Args: never
+        Args: Record<string, never>
         Returns: {
           bucket_id: string
           size: number
@@ -799,7 +903,7 @@ export type Database = {
         Args: { bucket_ids: string[]; names: string[] }
         Returns: undefined
       }
-      operation: { Args: never; Returns: string }
+      operation: { Args: Record<string, never>; Returns: string }
       search: {
         Args: {
           bucketname: string

@@ -23,7 +23,7 @@ export function useMemberships() {
           created_at,
           churches:church_id (id, name)
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user!.id)
         .order('last_accessed_at', { ascending: false });
 
       if (error) throw error;
@@ -55,7 +55,7 @@ export function useMemberships() {
           created_at,
           users:user_id (id, name, email)
         `)
-        .eq('church_id', user?.churchId)
+        .eq('church_id', user!.churchId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;

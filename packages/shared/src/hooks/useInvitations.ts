@@ -26,7 +26,7 @@ export function useInvitations() {
           created_at,
           users:invited_by (name)
         `)
-        .eq('church_id', user?.churchId)
+        .eq('church_id', user!.churchId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -49,25 +49,31 @@ export function useInvitations() {
   // Create invitation
   const createInvitationMutation = useMutation({
     mutationFn: async ({ email, role }: { email: string; role: Role }) => {
-      // Check if already a member
-      const { data: existingMember } = await supabase
-        .from('church_memberships')
+      // Check if user exists and is already a member
+      const { data: existingUser } = await supabase
+        .from('users')
         .select('id')
-        .eq('church_id', user?.churchId)
-        .eq('user_id', (
-          await supabase.from('users').select('id').eq('email', email).single()
-        ).data?.id)
+        .eq('email', email)
         .single();
 
-      if (existingMember) {
-        throw new Error('User is already a member of this church');
+      if (existingUser) {
+        const { data: existingMember } = await supabase
+          .from('church_memberships')
+          .select('id')
+          .eq('church_id', user!.churchId)
+          .eq('user_id', existingUser.id)
+          .single();
+
+        if (existingMember) {
+          throw new Error('User is already a member of this church');
+        }
       }
 
       // Check for pending invitation
       const { data: existingInvite } = await supabase
         .from('invitations')
         .select('id')
-        .eq('church_id', user?.churchId)
+        .eq('church_id', user!.churchId)
         .eq('email', email)
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
@@ -80,10 +86,10 @@ export function useInvitations() {
       const { data, error } = await supabase
         .from('invitations')
         .insert({
-          church_id: user?.churchId,
+          church_id: user!.churchId,
           email,
           role,
-          invited_by: user?.id,
+          invited_by: user!.id,
         })
         .select()
         .single();
@@ -171,7 +177,7 @@ export function useInvitations() {
       token: data.token,
       expiresAt: data.expires_at,
       acceptedAt: data.accepted_at,
-      createdAt: data.created_at,
+      createdAt: data.created_at ?? new Date().toISOString(),
       church: data.churches ? { id: data.church_id, name: data.churches.name } : undefined,
     };
   };
