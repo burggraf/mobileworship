@@ -365,6 +365,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_church_and_user: {
+        Args: {
+          p_church_name: string
+          p_user_email: string
+          p_user_id: string
+          p_user_name: string
+        }
+        Returns: Json
+      }
       get_user_church_id: { Args: never; Returns: string }
       get_user_role: { Args: never; Returns: string }
     }

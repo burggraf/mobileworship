@@ -253,9 +253,6 @@ export function useRealtime({ eventId, items, songs, displayIds = [], getBackgro
   useEffect(() => {
     if (displayIds.length === 0) return;
 
-    // Track subscription state
-    let isSubscribed = false;
-
     const channels = displayIds.map(displayId => {
       const channel = supabase.channel(`display:${displayId}`);
       return channel;
@@ -271,7 +268,6 @@ export function useRealtime({ eventId, items, songs, displayIds = [], getBackgro
         });
       })
     )).then(() => {
-      isSubscribed = true;
       displayChannelsRef.current = channels;
 
       // Send initial slide after all channels are subscribed
@@ -288,7 +284,6 @@ export function useRealtime({ eventId, items, songs, displayIds = [], getBackgro
     });
 
     return () => {
-      isSubscribed = false;
       channels.forEach(channel => channel.unsubscribe());
       displayChannelsRef.current = [];
     };
