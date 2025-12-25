@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth, useSupabase } from '@mobileworship/shared';
 import { useTheme } from '../contexts/ThemeContext';
 import { supportedLanguages } from '../i18n';
-import { TeamSection } from '../components/settings/TeamSection';
-import { ChurchSwitcher } from '../components/settings/ChurchSwitcher';
-import { DeleteChurchSection } from '../components/settings/DeleteChurchSection';
+import { TeamSection, ChurchSwitcher, DeleteChurchSection } from '../components/settings';
 
 export function SettingsPage() {
   const { t, i18n } = useTranslation();
