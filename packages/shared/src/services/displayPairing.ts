@@ -1,4 +1,5 @@
 // packages/shared/src/services/displayPairing.ts
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { DeviceInfo } from '../types/display';
 
 export interface ClaimDisplayResult {
@@ -14,32 +15,31 @@ export interface ValidateCodeResult {
 }
 
 export async function claimDisplay(
-  supabaseUrl: string,
-  accessToken: string,
+  supabase: SupabaseClient,
   code: string,
   name: string,
   location?: string
 ): Promise<ClaimDisplayResult> {
-  const response = await fetch(`${supabaseUrl}/functions/v1/display-pairing`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
+  const { data, error } = await supabase.functions.invoke('display-pairing', {
+    body: {
       action: 'claim',
       code,
       name,
       location,
-    }),
+    },
   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to claim display');
+  if (error) {
+    console.error('Claim display error:', error);
+    throw new Error(error.message || 'Failed to claim display');
   }
 
-  return response.json();
+  if (data?.error) {
+    console.error('Claim display error:', data.error);
+    throw new Error(data.error);
+  }
+
+  return data;
 }
 
 export function parseQRCode(qrValue: string): string | null {

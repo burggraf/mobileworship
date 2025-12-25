@@ -94,15 +94,13 @@ export function useDisplays() {
 
   const removeDisplay = useMutation({
     mutationFn: async (displayId: string) => {
+      if (!user?.churchId) throw new Error('Not authenticated');
+      // Delete the display entirely - host app will create new one on next boot
       const { error } = await supabase
         .from('displays')
-        .update({
-          church_id: null,
-          paired_at: null,
-          name: 'Unnamed Display',
-          location: null,
-        })
-        .eq('id', displayId);
+        .delete()
+        .eq('id', displayId)
+        .eq('church_id', user.churchId);
       if (error) throw error;
     },
     onSuccess: () => {

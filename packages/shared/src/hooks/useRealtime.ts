@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useSupabase } from './useSupabase';
-import type { EventItem, ParsedSong } from '../types';
+import type { EventItem, ParsedSong, SongSection } from '../types';
 
 export interface PresentationState {
   eventId: string;
@@ -10,15 +10,24 @@ export interface PresentationState {
   isBlank: boolean;
 }
 
+interface SlideContent {
+  label: string;
+  lines: string[];
+  backgroundUrl?: string;
+}
+
 interface UseRealtimeOptions {
   eventId: string;
   items: EventItem[];
   songs: Map<string, ParsedSong>;
+  displayIds?: string[];
+  getBackgroundUrl?: (songId: string) => string | undefined;
 }
 
-export function useRealtime({ eventId, items, songs }: UseRealtimeOptions) {
+export function useRealtime({ eventId, items, songs, displayIds = [], getBackgroundUrl }: UseRealtimeOptions) {
   const supabase = useSupabase();
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const displayChannelsRef = useRef<RealtimeChannel[]>([]);
 
   const [state, setState] = useState<PresentationState>({
     eventId,
@@ -27,9 +36,46 @@ export function useRealtime({ eventId, items, songs }: UseRealtimeOptions) {
     isBlank: false,
   });
 
-  // Broadcast state changes
+  // Helper to get slide content for current state
+  const getSlideContent = useCallback((itemIndex: number, sectionIndex: number): SlideContent | null => {
+    const item = items[itemIndex];
+    if (!item || item.type !== 'song') return null;
+
+    const parsedSong = songs.get(item.id);
+    if (!parsedSong) return null;
+
+    // Get sections (with arrangement if specified)
+    const sections: SongSection[] = item.arrangement && item.arrangement.length > 0
+      ? item.arrangement
+          .map((label) => parsedSong.sections.find((s) => s.label === label))
+          .filter((s): s is SongSection => s !== undefined)
+      : parsedSong.sections;
+
+    const section = sections[sectionIndex];
+    if (!section) return null;
+
+    return {
+      label: section.label,
+      lines: section.lines,
+      backgroundUrl: getBackgroundUrl?.(item.id),
+    };
+  }, [items, songs, getBackgroundUrl]);
+
+  // Send command to all displays
+  const sendToDisplays = useCallback((command: Record<string, unknown>) => {
+    displayChannelsRef.current.forEach(channel => {
+      channel.send({
+        type: 'broadcast',
+        event: 'command',
+        payload: command,
+      });
+    });
+  }, []);
+
+  // Broadcast state changes to other controllers and send slide to displays
   const broadcast = useCallback(
     (newState: PresentationState) => {
+      // Broadcast to other controllers
       if (channelRef.current) {
         channelRef.current.send({
           type: 'broadcast',
@@ -37,8 +83,18 @@ export function useRealtime({ eventId, items, songs }: UseRealtimeOptions) {
           payload: newState,
         });
       }
+
+      // Send slide content to displays
+      if (newState.isBlank) {
+        sendToDisplays({ type: 'BLANK_SCREEN' });
+      } else {
+        const slide = getSlideContent(newState.currentItemIndex, newState.currentSectionIndex);
+        if (slide) {
+          sendToDisplays({ type: 'SET_SLIDE', slide });
+        }
+      }
     },
-    []
+    [sendToDisplays, getSlideContent]
   );
 
   // Get current item and its sections
@@ -174,7 +230,7 @@ export function useRealtime({ eventId, items, songs }: UseRealtimeOptions) {
     });
   }, [broadcast]);
 
-  // Set up realtime channel
+  // Set up realtime channel for controllers
   useEffect(() => {
     const channel = supabase.channel(`event:${eventId}`);
 
@@ -192,6 +248,52 @@ export function useRealtime({ eventId, items, songs }: UseRealtimeOptions) {
       channelRef.current = null;
     };
   }, [supabase, eventId]);
+
+  // Set up display channels - only recreate when displayIds change
+  useEffect(() => {
+    if (displayIds.length === 0) return;
+
+    // Track subscription state
+    let isSubscribed = false;
+
+    const channels = displayIds.map(displayId => {
+      const channel = supabase.channel(`display:${displayId}`);
+      return channel;
+    });
+
+    // Subscribe all channels and wait for them to be ready
+    Promise.all(channels.map(channel =>
+      new Promise<void>((resolve) => {
+        channel.subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            resolve();
+          }
+        });
+      })
+    )).then(() => {
+      isSubscribed = true;
+      displayChannelsRef.current = channels;
+
+      // Send initial slide after all channels are subscribed
+      const slide = getSlideContent(state.currentItemIndex, state.currentSectionIndex);
+      if (slide) {
+        channels.forEach(channel => {
+          channel.send({
+            type: 'broadcast',
+            event: 'command',
+            payload: { type: 'SET_SLIDE', slide },
+          });
+        });
+      }
+    });
+
+    return () => {
+      isSubscribed = false;
+      channels.forEach(channel => channel.unsubscribe());
+      displayChannelsRef.current = [];
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supabase, displayIds.join(',')]); // Only recreate when displayIds actually change
 
   return {
     state,

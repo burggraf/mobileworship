@@ -36,6 +36,15 @@ export class RealtimeService {
       onCommand(payload as ClientCommand);
     });
 
+    // Respond to ping requests for connection testing
+    this.channel.on('broadcast', { event: 'ping' }, () => {
+      this.channel?.send({
+        type: 'broadcast',
+        event: 'pong',
+        payload: { timestamp: Date.now() },
+      });
+    });
+
     if (onClaim) {
       this.channel.on(
         'postgres_changes',
@@ -56,7 +65,24 @@ export class RealtimeService {
     }
 
     await this.channel.subscribe();
+
+    // Send immediate heartbeat on connect
+    await this.sendHeartbeat();
     this.startHeartbeat();
+  }
+
+  private async sendHeartbeat(): Promise<void> {
+    if (this.displayId) {
+      try {
+        const supabase = this.getSupabase();
+        await supabase
+          .from('displays')
+          .update({ last_seen_at: new Date().toISOString() })
+          .eq('id', this.displayId);
+      } catch (error) {
+        console.error('Heartbeat failed:', error);
+      }
+    }
   }
 
   broadcastState(state: HostState): void {
@@ -80,14 +106,8 @@ export class RealtimeService {
   }
 
   private startHeartbeat(): void {
-    this.heartbeatInterval = setInterval(async () => {
-      if (this.displayId) {
-        const supabase = this.getSupabase();
-        await supabase
-          .from('displays')
-          .update({ last_seen_at: new Date().toISOString() })
-          .eq('id', this.displayId);
-      }
+    this.heartbeatInterval = setInterval(() => {
+      this.sendHeartbeat();
     }, 30000);
   }
 

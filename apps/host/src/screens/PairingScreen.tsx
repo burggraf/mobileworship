@@ -8,11 +8,12 @@ const { width, height } = Dimensions.get('window');
 
 interface Props {
   onPaired: (displayId: string, name: string, churchId: string) => void;
+  existingDisplayId?: string; // If provided, regenerate code for this display instead of creating new
 }
 
-export function PairingScreen({ onPaired }: Props) {
+export function PairingScreen({ onPaired, existingDisplayId }: Props) {
   const [pairingCode, setPairingCode] = useState<string | null>(null);
-  const [displayId, setDisplayId] = useState<string | null>(null);
+  const [displayId, setDisplayId] = useState<string | null>(existingDisplayId || null);
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +23,10 @@ export function PairingScreen({ onPaired }: Props) {
     setError(null);
 
     try {
-      const result = await pairingService.generatePairingCode();
+      // Regenerate code for existing display, or generate new one
+      const result = existingDisplayId
+        ? await pairingService.regeneratePairingCode(existingDisplayId)
+        : await pairingService.generatePairingCode();
       setPairingCode(result.pairingCode);
       setDisplayId(result.displayId);
       setExpiresAt(new Date(result.expiresAt));
@@ -32,7 +36,7 @@ export function PairingScreen({ onPaired }: Props) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [existingDisplayId]);
 
   useEffect(() => {
     generateCode();

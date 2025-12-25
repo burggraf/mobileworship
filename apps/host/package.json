@@ -3,11 +3,14 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "macos": "react-native run-macos",
-    "windows": "react-native run-windows",
-    "start": "react-native start",
+    "android": "dotenv -- react-native run-android",
+    "android:release": "dotenv -- bash -c 'cd android && ./gradlew assembleRelease'",
+    "android:install": "adb install android/app/build/outputs/apk/release/app-release.apk",
+    "ios": "dotenv -- react-native run-ios",
+    "macos": "dotenv -- react-native run-macos",
+    "windows": "dotenv -- react-native run-windows",
+    "start": "dotenv -- react-native start",
+    "start:reset": "dotenv -- react-native start --reset-cache",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit"
   },
@@ -26,6 +29,7 @@
     "react-native-zeroconf": "^0.13.0"
   },
   "devDependencies": {
+    "dotenv-cli": "^7.4.2",
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
     "@babel/runtime": "^7.24.0",

@@ -92,14 +92,10 @@ export function useDisplay(displayId: string | null) {
   const remove = useMutation({
     mutationFn: async () => {
       if (!displayId) throw new Error('No display');
+      // Delete the display entirely - host app will create new one on next boot
       const { error } = await supabase
         .from('displays')
-        .update({
-          church_id: null,
-          paired_at: null,
-          name: 'Unnamed Display',
-          location: null,
-        })
+        .delete()
         .eq('id', displayId);
       if (error) throw error;
     },

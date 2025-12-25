@@ -27,7 +27,17 @@ interface VerifyRequest {
   displayId: string;
 }
 
-type RequestBody = GenerateRequest | ClaimRequest | VerifyRequest;
+interface RegenerateRequest {
+  action: 'regenerate';
+  displayId: string;
+  deviceInfo: {
+    platform: string;
+    version: string;
+    resolution: { width: number; height: number };
+  };
+}
+
+type RequestBody = GenerateRequest | ClaimRequest | VerifyRequest | RegenerateRequest;
 
 function generatePairingCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -77,9 +87,10 @@ serve(async (req) => {
     if (body.action === 'claim') {
       // Get authenticated user
       const authHeader = req.headers.get('Authorization');
+      console.log('Auth header present:', !!authHeader);
       if (!authHeader) {
         return new Response(
-          JSON.stringify({ error: 'Authorization required' }),
+          JSON.stringify({ error: 'Authorization required - no header' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -92,9 +103,10 @@ serve(async (req) => {
 
       // Get the authenticated user's ID from the JWT
       const { data: { user: authUser }, error: authError } = await userClient.auth.getUser();
+      console.log('Auth user:', authUser?.id, 'Error:', authError?.message);
       if (authError || !authUser) {
         return new Response(
-          JSON.stringify({ error: 'Authentication failed' }),
+          JSON.stringify({ error: `Authentication failed: ${authError?.message || 'no user'}` }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -105,9 +117,10 @@ serve(async (req) => {
         .eq('id', authUser.id)
         .single();
 
+      console.log('User data:', userData, 'Error:', userError?.message);
       if (userError || !userData) {
         return new Response(
-          JSON.stringify({ error: 'User not found' }),
+          JSON.stringify({ error: `User not found: ${userError?.message || 'no data'}` }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -156,23 +169,59 @@ serve(async (req) => {
       );
     }
 
+    if (body.action === 'regenerate') {
+      // Regenerate pairing code for an existing unpaired display
+      const pairingCode = generatePairingCode();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+      const { data, error } = await supabase
+        .from('displays')
+        .update({
+          pairing_code: pairingCode,
+          pairing_code_expires_at: expiresAt,
+          device_info: body.deviceInfo,
+        })
+        .eq('id', body.displayId)
+        .select('id, pairing_code')
+        .single();
+
+      if (error) throw error;
+
+      return new Response(
+        JSON.stringify({
+          displayId: data.id,
+          pairingCode: data.pairing_code,
+          expiresAt,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (body.action === 'verify') {
-      // Verify a display is still valid
+      // Verify a display exists and check its pairing status
       const { data, error } = await supabase
         .from('displays')
         .select('id, name, church_id, paired_at, settings')
         .eq('id', body.displayId)
-        .not('paired_at', 'is', null)
         .single();
 
       if (error || !data) {
+        // Display doesn't exist at all
         return new Response(
-          JSON.stringify({ valid: false }),
+          JSON.stringify({ valid: false, exists: false }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Update last_seen_at
+      // Display exists but isn't paired
+      if (!data.paired_at) {
+        return new Response(
+          JSON.stringify({ valid: false, exists: true, displayId: data.id }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Update last_seen_at for paired displays
       await supabase
         .from('displays')
         .update({ last_seen_at: new Date().toISOString() })
@@ -181,6 +230,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           valid: true,
+          exists: true,
           displayId: data.id,
           name: data.name,
           churchId: data.church_id,

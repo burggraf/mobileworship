@@ -30,14 +30,13 @@ export function SongDetailPage() {
   useEffect(() => {
     if (song) {
       try {
+        const parsed = parseSongMarkdown(song.lyrics || '', song.title);
+        setMetadata({ ...parsed.metadata, author: parsed.metadata.author || song.author || undefined });
+        // Extract just the lyrics body (without frontmatter)
         if (song.lyrics) {
-          const parsed = parseSongMarkdown(song.lyrics);
-          setMetadata(parsed.metadata);
-          // Extract just the lyrics body (without frontmatter)
           const bodyMatch = song.lyrics.match(/^---[\s\S]*?---\r?\n([\s\S]*)$/);
-          setLyrics(bodyMatch ? bodyMatch[1].trim() : '');
+          setLyrics(bodyMatch ? bodyMatch[1].trim() : song.lyrics);
         } else {
-          setMetadata({ title: song.title, author: song.author || undefined });
           setLyrics('');
         }
       } catch {

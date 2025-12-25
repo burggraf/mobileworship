@@ -55,3 +55,5 @@ yarn-debug.log*
 yarn-error.log*
 .env.secrets
 test-hymns.json
+# Temporary - config with hardcoded secrets
+apps/host/src/config.ts

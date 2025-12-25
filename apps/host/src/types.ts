@@ -42,9 +42,16 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
 // Protocol types
 export type TransitionType = 'cut' | 'fade' | 'slide';
 
+export interface SlideContent {
+  label: string;
+  lines: string[];
+  backgroundUrl?: string;
+}
+
 export type ClientCommand =
   | { type: 'LOAD_EVENT'; eventId: string }
   | { type: 'UNLOAD_EVENT' }
+  | { type: 'SET_SLIDE'; slide: SlideContent }
   | { type: 'GOTO_SLIDE'; slideIndex: number }
   | { type: 'GOTO_SECTION'; sectionIndex: number }
   | { type: 'GOTO_ITEM'; itemIndex: number }

@@ -34,8 +34,10 @@ export function PresentationPage() {
   const songsMap = useMemo(() => {
     const map = new Map<string, ParsedSong>();
     songs.forEach((song) => {
-      if (song.lyrics) {
-        map.set(song.id, parseSongMarkdown(song.lyrics));
+      try {
+        map.set(song.id, parseSongMarkdown(song.lyrics || '', song.title));
+      } catch (e) {
+        console.warn(`Failed to parse song ${song.title}:`, e);
       }
     });
     return map;

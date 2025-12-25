@@ -52,3 +52,6 @@ verify_jwt = false
 
 [functions.import-background]
 verify_jwt = true
+
+[functions.display-pairing]
+verify_jwt = false

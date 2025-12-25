@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth, useEvents, useSongs, useRealtime, parseSongMarkdown } from '@mobileworship/shared';
+import { useAuth, useEvents, useSongs, useRealtime, parseSongMarkdown, useDisplays, useMedia } from '@mobileworship/shared';
 import type { EventItem, ParsedSong } from '@mobileworship/shared';
 
 export function ControlPage() {
@@ -10,6 +10,8 @@ export function ControlPage() {
   const { user, isLoading, can } = useAuth();
   const { events } = useEvents();
   const { songs } = useSongs();
+  const { displays } = useDisplays();
+  const { media, getPublicUrl } = useMedia();
 
   // Get current event
   const event = useMemo(() => {
@@ -26,12 +28,28 @@ export function ControlPage() {
   const songsMap = useMemo(() => {
     const map = new Map<string, ParsedSong>();
     songs.forEach((song) => {
-      if (song.lyrics) {
-        map.set(song.id, parseSongMarkdown(song.lyrics));
+      try {
+        map.set(song.id, parseSongMarkdown(song.lyrics || '', song.title));
+      } catch (e) {
+        console.warn(`Failed to parse song ${song.title}:`, e);
       }
     });
     return map;
   }, [songs]);
+
+  // Get display IDs to send commands to
+  const displayIds = useMemo(() => {
+    return displays.map(d => d.id);
+  }, [displays]);
+
+  // Helper to get background URL for a song
+  const getBackgroundUrl = useCallback((songId: string): string | undefined => {
+    const song = songs.find(s => s.id === songId);
+    if (!song?.default_background_id) return undefined;
+    const mediaItem = media.find(m => m.id === song.default_background_id);
+    if (!mediaItem?.storage_path) return undefined;
+    return getPublicUrl(mediaItem.storage_path);
+  }, [songs, media, getPublicUrl]);
 
   // Initialize realtime control
   const {
@@ -47,6 +65,8 @@ export function ControlPage() {
     eventId: eventId || '',
     items,
     songs: songsMap,
+    displayIds,
+    getBackgroundUrl,
   });
 
   // Get current and next sections

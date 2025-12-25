@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useReducer } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import type { ClientCommand, HostState } from '@mobileworship/protocol';
-import type { DisplaySettings } from '@mobileworship/shared';
-import { DEFAULT_DISPLAY_SETTINGS } from '@mobileworship/shared';
+import type { ClientCommand, HostState, SlideContent } from '../types';
+import type { DisplaySettings } from '../types';
+import { DEFAULT_DISPLAY_SETTINGS } from '../types';
 import { SlideRenderer } from '../components/SlideRenderer';
 import { pairingService } from '../services/PairingService';
 import { realtimeService } from '../services/RealtimeService';
@@ -13,12 +13,12 @@ const { width, height } = Dimensions.get('window');
 
 type AppState =
   | { screen: 'loading' }
-  | { screen: 'pairing' }
+  | { screen: 'pairing'; existingDisplayId?: string }
   | { screen: 'ready'; displayId: string; name: string; churchId: string; settings: DisplaySettings }
   | { screen: 'display'; displayId: string; name: string; churchId: string; settings: DisplaySettings };
 
 type Action =
-  | { type: 'INIT_UNPAIRED' }
+  | { type: 'INIT_UNPAIRED'; existingDisplayId?: string }
   | { type: 'INIT_PAIRED'; displayId: string; name: string; churchId: string; settings: DisplaySettings }
   | { type: 'PAIRED'; displayId: string; name: string; churchId: string }
   | { type: 'EVENT_LOADED' }
@@ -27,7 +27,7 @@ type Action =
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'INIT_UNPAIRED':
-      return { screen: 'pairing' };
+      return { screen: 'pairing', existingDisplayId: action.existingDisplayId };
     case 'INIT_PAIRED':
       return { screen: 'ready', displayId: action.displayId, name: action.name, churchId: action.churchId, settings: action.settings };
     case 'PAIRED':
@@ -43,12 +43,9 @@ function reducer(state: AppState, action: Action): AppState {
   }
 }
 
-interface SlideContent {
-  lines: string[];
-  backgroundUrl?: string;
-}
 
 export function DisplayScreen() {
+  console.log('DisplayScreen rendering');
   const [appState, dispatch] = useReducer(reducer, { screen: 'loading' });
   const [hostState, setHostState] = useState<HostState>({
     displayId: '',
@@ -67,7 +64,9 @@ export function DisplayScreen() {
 
   useEffect(() => {
     async function init() {
+      console.log('DisplayScreen init starting');
       const result = await pairingService.initialize();
+      console.log('DisplayScreen init result:', JSON.stringify(result));
       if (result.paired && result.displayId) {
         dispatch({
           type: 'INIT_PAIRED',
@@ -77,7 +76,8 @@ export function DisplayScreen() {
           settings: result.settings || DEFAULT_DISPLAY_SETTINGS,
         });
       } else {
-        dispatch({ type: 'INIT_UNPAIRED' });
+        // Pass existing displayId if display exists but needs re-pairing
+        dispatch({ type: 'INIT_UNPAIRED', existingDisplayId: result.displayId });
       }
     }
     init();
@@ -102,6 +102,7 @@ export function DisplayScreen() {
   }, [hostState, isConnected]);
 
   const handleCommand = useCallback((command: ClientCommand) => {
+    console.log('Received command:', command.type);
     switch (command.type) {
       case 'LOAD_EVENT':
         dispatch({ type: 'EVENT_LOADED' });
@@ -111,6 +112,11 @@ export function DisplayScreen() {
         dispatch({ type: 'EVENT_UNLOADED' });
         setHostState(s => ({ ...s, eventId: null, isLogo: true }));
         setCurrentSlide(null);
+        break;
+      case 'SET_SLIDE':
+        dispatch({ type: 'EVENT_LOADED' });
+        setCurrentSlide(command.slide);
+        setHostState(s => ({ ...s, isBlank: false, isLogo: false, lastUpdated: Date.now() }));
         break;
       case 'BLANK_SCREEN':
         setHostState(s => ({ ...s, isBlank: true, isLogo: false }));
@@ -145,7 +151,7 @@ export function DisplayScreen() {
   }
 
   if (appState.screen === 'pairing') {
-    return <PairingScreen onPaired={handlePaired} />;
+    return <PairingScreen onPaired={handlePaired} existingDisplayId={appState.existingDisplayId} />;
   }
 
   if (appState.screen === 'ready') {

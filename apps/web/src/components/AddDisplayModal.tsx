@@ -75,19 +75,8 @@ export function AddDisplayModal({ isOpen, onClose }: AddDisplayModalProps) {
     setError(null);
 
     try {
-      // Get fresh access token at submit time
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        setError(t('displays.add.notAuthenticated'));
-        setIsSubmitting(false);
-        return;
-      }
-
-      const supabaseUrl = (supabase as any).supabaseUrl || import.meta.env.VITE_SUPABASE_URL;
-
       await claimDisplay(
-        supabaseUrl,
-        session.access_token,
+        supabase,
         fullCode,
         name.trim(),
         location.trim() || undefined

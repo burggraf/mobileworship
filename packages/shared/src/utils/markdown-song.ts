@@ -131,12 +131,27 @@ function applyAutoNumbering(sections: SongSection[]): SongSection[] {
 
 /**
  * Parse markdown string into structured song data
+ * @param markdown The markdown string to parse
+ * @param fallbackTitle Optional title to use if not present in frontmatter
  */
-export function parseSongMarkdown(markdown: string): ParsedSong {
+export function parseSongMarkdown(markdown: string, fallbackTitle?: string): ParsedSong {
+  if (!markdown || markdown.trim() === '') {
+    // Handle empty lyrics
+    return {
+      metadata: { title: fallbackTitle || 'Untitled' },
+      sections: [],
+    };
+  }
+
   const { metadata, body } = parseFrontmatter(markdown);
 
+  // Use fallback title if not in frontmatter
   if (!metadata.title) {
-    throw new Error('Song must have a title in frontmatter');
+    if (fallbackTitle) {
+      metadata.title = fallbackTitle;
+    } else {
+      throw new Error('Song must have a title in frontmatter');
+    }
   }
 
   const rawSections = parseSections(body);
