@@ -3,10 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useAuth, useSupabase } from '@mobileworship/shared';
 import { useTheme } from '../contexts/ThemeContext';
 import { supportedLanguages } from '../i18n';
+import { TeamSection } from '../components/settings/TeamSection';
+import { ChurchSwitcher } from '../components/settings/ChurchSwitcher';
+import { DeleteChurchSection } from '../components/settings/DeleteChurchSection';
 
 export function SettingsPage() {
   const { t, i18n } = useTranslation();
-  const { user, can } = useAuth();
+  const { user, can, hasMultipleChurches } = useAuth();
   const supabase = useSupabase();
   const { theme, setTheme } = useTheme();
   const [churchName, setChurchName] = useState('');
@@ -208,14 +211,11 @@ export function SettingsPage() {
           </section>
         )}
 
-        {can('church:users') && (
-          <section>
-            <h3 className="text-lg font-semibold mb-4">{t('settings.team.title')}</h3>
-            <div className="p-4 border dark:border-gray-700 rounded-lg">
-              <p className="text-gray-500">{t('settings.team.comingSoon')}</p>
-            </div>
-          </section>
-        )}
+        {can('church:users') && <TeamSection />}
+
+        {hasMultipleChurches && <ChurchSwitcher />}
+
+        {can('church:manage') && <DeleteChurchSection />}
       </div>
     </div>
   );
