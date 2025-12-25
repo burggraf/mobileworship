@@ -12,6 +12,7 @@ export function useInvitations() {
   const invitationsQuery = useQuery({
     queryKey: ['invitations', user?.churchId],
     queryFn: async () => {
+      // First fetch invitations without JOIN
       const { data, error } = await supabase
         .from('invitations')
         .select(`
@@ -23,13 +24,28 @@ export function useInvitations() {
           token,
           expires_at,
           accepted_at,
-          created_at,
-          users:invited_by (name)
+          created_at
         `)
         .eq('church_id', user!.churchId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Fetch invited_by user names separately to avoid JOIN RLS issues
+      const invitedByIds = [...new Set(data.map((inv) => inv.invited_by).filter(Boolean))];
+      let usersMap: Record<string, string> = {};
+
+      if (invitedByIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('id, name')
+          .in('id', invitedByIds);
+
+        if (usersData) {
+          usersMap = Object.fromEntries(usersData.map((u) => [u.id, u.name]));
+        }
+      }
+
       return data.map((inv) => ({
         id: inv.id,
         churchId: inv.church_id,
@@ -40,7 +56,9 @@ export function useInvitations() {
         expiresAt: inv.expires_at,
         acceptedAt: inv.accepted_at,
         createdAt: inv.created_at,
-        invitedByUser: inv.users ? { name: inv.users.name } : undefined,
+        invitedByUser: inv.invited_by && usersMap[inv.invited_by]
+          ? { name: usersMap[inv.invited_by] }
+          : undefined,
       })) as Invitation[];
     },
     enabled: !!user?.churchId,
@@ -95,6 +113,32 @@ export function useInvitations() {
         .single();
 
       if (error) throw error;
+
+      // Send invitation email via Edge Function
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invitation`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.session?.access_token}`,
+            },
+            body: JSON.stringify({
+              invitationId: data.id,
+              language: localStorage.getItem('i18nextLng') || 'en',
+            }),
+          }
+        );
+        if (!response.ok) {
+          console.warn('Failed to send invitation email:', await response.text());
+        }
+      } catch (emailError) {
+        // Log but don't fail - invitation was created successfully
+        console.warn('Error sending invitation email:', emailError);
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -102,7 +146,7 @@ export function useInvitations() {
     },
   });
 
-  // Resend invitation (updates expires_at)
+  // Resend invitation (updates expires_at and sends email again)
   const resendInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
       const newExpiry = new Date();
@@ -114,6 +158,30 @@ export function useInvitations() {
         .eq('id', invitationId);
 
       if (error) throw error;
+
+      // Send invitation email via Edge Function
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invitation`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.session?.access_token}`,
+            },
+            body: JSON.stringify({
+              invitationId,
+              language: localStorage.getItem('i18nextLng') || 'en',
+            }),
+          }
+        );
+        if (!response.ok) {
+          console.warn('Failed to send invitation email:', await response.text());
+        }
+      } catch (emailError) {
+        console.warn('Error sending invitation email:', emailError);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invitations'] });

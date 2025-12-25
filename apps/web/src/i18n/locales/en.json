@@ -446,6 +446,8 @@
       "cancelInvite": "Cancel",
       "canceling": "Canceling...",
       "inviteCanceled": "Invitation canceled",
+      "copyLink": "Copy Link",
+      "linkCopied": "Invitation link copied to clipboard",
       "expires": "Expires {{date}}",
       "expired": "Expired",
       "you": "(you)",

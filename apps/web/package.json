@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
-    "deploy": "wrangler pages deploy dist --project-name=mobileworship"
+    "deploy": "wrangler pages deploy dist --project-name=mobileworship",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@mobileworship/protocol": "workspace:*",
@@ -25,6 +28,7 @@
     "react-router-dom": "^6.23.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.2.0",

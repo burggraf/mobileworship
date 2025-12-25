@@ -12,6 +12,7 @@ export function useMemberships() {
   const myMembershipsQuery = useQuery({
     queryKey: ['memberships', 'mine'],
     queryFn: async () => {
+      // Fetch memberships without JOIN to avoid RLS issues
       const { data, error } = await supabase
         .from('church_memberships')
         .select(`
@@ -20,13 +21,28 @@ export function useMemberships() {
           church_id,
           role,
           last_accessed_at,
-          created_at,
-          churches:church_id (id, name)
+          created_at
         `)
         .eq('user_id', user!.id)
         .order('last_accessed_at', { ascending: false });
 
       if (error) throw error;
+
+      // Fetch church names separately
+      const churchIds = [...new Set(data.map((m) => m.church_id))];
+      let churchesMap: Record<string, { id: string; name: string }> = {};
+
+      if (churchIds.length > 0) {
+        const { data: churchesData } = await supabase
+          .from('churches')
+          .select('id, name')
+          .in('id', churchIds);
+
+        if (churchesData) {
+          churchesMap = Object.fromEntries(churchesData.map((c) => [c.id, { id: c.id, name: c.name }]));
+        }
+      }
+
       return data.map((m) => ({
         id: m.id,
         userId: m.user_id,
@@ -34,7 +50,7 @@ export function useMemberships() {
         role: m.role as Role,
         lastAccessedAt: m.last_accessed_at,
         createdAt: m.created_at,
-        church: m.churches ? { id: m.churches.id, name: m.churches.name } : undefined,
+        church: churchesMap[m.church_id] || undefined,
       })) as ChurchMembership[];
     },
     enabled: !!user?.id,
@@ -44,6 +60,7 @@ export function useMemberships() {
   const churchMembersQuery = useQuery({
     queryKey: ['memberships', 'church', user?.churchId],
     queryFn: async () => {
+      // Fetch memberships without JOIN to avoid RLS issues
       const { data, error } = await supabase
         .from('church_memberships')
         .select(`
@@ -52,13 +69,28 @@ export function useMemberships() {
           church_id,
           role,
           last_accessed_at,
-          created_at,
-          users:user_id (id, name, email)
+          created_at
         `)
         .eq('church_id', user!.churchId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
+
+      // Fetch user details separately
+      const userIds = [...new Set(data.map((m) => m.user_id))];
+      let usersMap: Record<string, { id: string; name: string; email: string }> = {};
+
+      if (userIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .in('id', userIds);
+
+        if (usersData) {
+          usersMap = Object.fromEntries(usersData.map((u) => [u.id, { id: u.id, name: u.name, email: u.email }]));
+        }
+      }
+
       return data.map((m) => ({
         id: m.id,
         userId: m.user_id,
@@ -66,7 +98,7 @@ export function useMemberships() {
         role: m.role as Role,
         lastAccessedAt: m.last_accessed_at,
         createdAt: m.created_at,
-        user: m.users ? { id: m.users.id, name: m.users.name, email: m.users.email } : undefined,
+        user: usersMap[m.user_id] || undefined,
       })) as ChurchMembership[];
     },
     enabled: !!user?.churchId,

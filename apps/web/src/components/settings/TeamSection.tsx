@@ -321,6 +321,17 @@ export function TeamSection() {
 
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => {
+                      const link = `${window.location.origin}/accept-invite?token=${invitation.token}`;
+                      navigator.clipboard.writeText(link);
+                      setSuccess(t('settings.team.linkCopied'));
+                    }}
+                    className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-md transition-colors"
+                    data-invitation-token={invitation.token}
+                  >
+                    {t('settings.team.copyLink')}
+                  </button>
+                  <button
                     onClick={() => handleResendInvite(invitation.id)}
                     disabled={isResending}
                     className="px-3 py-1.5 text-sm text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Get memberships
-    const { data: memberships } = await supabase
+    const { data: memberships, error: membershipError } = await supabase
       .from('church_memberships')
       .select('church_id, role, last_accessed_at')
       .eq('user_id', authUser.id)
@@ -125,8 +125,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    // Wait for user profile to load before returning
+    if (data.user) {
+      await fetchUserProfile(data.user);
+    }
   }
 
   async function signInWithGoogle() {

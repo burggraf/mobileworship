@@ -9,7 +9,7 @@ export function AcceptInvitePage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const supabase = useSupabase();
   const { acceptInvitation, getInvitationByToken } = useInvitations();
 
@@ -28,6 +28,11 @@ export function AcceptInvitePage() {
         setError(t('invite.notFound'));
         setIsLoading(false);
         return;
+      }
+
+      // Wait for auth to finish loading before checking user
+      if (isAuthLoading) {
+        return; // Will re-run when auth finishes loading
       }
 
       // Must be logged in to accept invitation
@@ -87,7 +92,7 @@ export function AcceptInvitePage() {
     }
 
     loadInvitation();
-  }, [token, user, navigate, getInvitationByToken, supabase, t]);
+  }, [token, user, isAuthLoading, navigate, getInvitationByToken, supabase, t]);
 
   async function handleAccept() {
     if (!token || !invitation) return;

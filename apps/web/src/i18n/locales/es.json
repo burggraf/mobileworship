@@ -446,6 +446,8 @@
       "cancelInvite": "Cancelar",
       "canceling": "Cancelando...",
       "inviteCanceled": "Invitación cancelada",
+      "copyLink": "Copiar Enlace",
+      "linkCopied": "Enlace de invitación copiado al portapapeles",
       "expires": "Expira {{date}}",
       "expired": "Expirada",
       "you": "(tú)",

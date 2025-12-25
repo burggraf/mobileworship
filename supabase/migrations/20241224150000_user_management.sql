@@ -7,7 +7,7 @@
 
 -- Church memberships (many-to-many users <-> churches)
 CREATE TABLE church_memberships (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
   church_id UUID NOT NULL REFERENCES churches ON DELETE CASCADE,
   role TEXT NOT NULL DEFAULT 'operator' CHECK (role IN ('admin', 'editor', 'operator')),
@@ -22,12 +22,12 @@ CREATE INDEX idx_memberships_church_role ON church_memberships(church_id, role);
 
 -- Invitations table
 CREATE TABLE invitations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   church_id UUID NOT NULL REFERENCES churches ON DELETE CASCADE,
   email TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'operator' CHECK (role IN ('admin', 'editor', 'operator')),
   invited_by UUID NOT NULL REFERENCES auth.users,
-  token UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+  token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
   accepted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -240,9 +240,12 @@ CREATE POLICY "Sole member delete church" ON churches
     AND (SELECT COUNT(*) FROM church_memberships WHERE church_id = id) = 1
   );
 
--- Drop old user policies
+-- Drop old user policies (various naming conventions)
 DROP POLICY IF EXISTS "Users can view users in their church" ON users;
 DROP POLICY IF EXISTS "Admins can manage users in their church" ON users;
+DROP POLICY IF EXISTS "Users can view church members" ON users;
+DROP POLICY IF EXISTS "Admins can update church users" ON users;
+DROP POLICY IF EXISTS "Admins can delete church users" ON users;
 
 -- New user policies
 CREATE POLICY "View users in member churches" ON users
