@@ -385,6 +385,7 @@
       "title": "Switch Church",
       "currentChurch": "Current Church",
       "yourChurches": "Your Churches",
+      "switch": "Switch",
       "switching": "Switching...",
       "switchFailed": "Failed to switch church"
     },

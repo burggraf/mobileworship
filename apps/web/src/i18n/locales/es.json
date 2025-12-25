@@ -385,6 +385,7 @@
       "title": "Cambiar Iglesia",
       "currentChurch": "Iglesia Actual",
       "yourChurches": "Tus Iglesias",
+      "switch": "Cambiar",
       "switching": "Cambiando...",
       "switchFailed": "Error al cambiar de iglesia"
     },
