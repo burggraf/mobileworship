@@ -26,6 +26,26 @@
     "noAccount": "¿No tienes una cuenta?",
     "hasAccount": "¿Ya tienes una cuenta?",
     "createAccount": "Crear Cuenta",
+    "signup": {
+      "checkEmail": {
+        "title": "Revisa Tu Correo",
+        "description": "Hemos enviado un enlace de confirmación a {{email}}. Haz clic en el enlace para activar tu cuenta.",
+        "hint": "¿No ves el correo? Revisa tu carpeta de spam."
+      }
+    },
+    "or": "o",
+    "google": {
+      "signIn": "Continuar con Google",
+      "error": "Error al iniciar sesión con Google"
+    },
+    "magicLink": {
+      "title": "Iniciar Sesión con Correo",
+      "description": "Ingresa tu correo electrónico y te enviaremos un enlace de inicio de sesión. Sin contraseña.",
+      "sendLink": "Enviar Enlace de Inicio",
+      "sending": "Enviando...",
+      "emailSent": "Revisa tu correo electrónico para el enlace de inicio de sesión.",
+      "error": "Error al enviar el enlace de inicio de sesión"
+    },
     "forgotPassword": {
       "link": "¿Olvidaste tu contraseña?",
       "title": "Restablecer Contraseña",

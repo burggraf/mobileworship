@@ -26,6 +26,26 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "createAccount": "Create Account",
+    "signup": {
+      "checkEmail": {
+        "title": "Check Your Email",
+        "description": "We've sent a confirmation link to {{email}}. Click the link to activate your account.",
+        "hint": "Don't see the email? Check your spam folder."
+      }
+    },
+    "or": "or",
+    "google": {
+      "signIn": "Continue with Google",
+      "error": "Failed to sign in with Google"
+    },
+    "magicLink": {
+      "title": "Sign In with Email",
+      "description": "Enter your email and we'll send you a sign-in link. No password needed.",
+      "sendLink": "Send Sign In Link",
+      "sending": "Sending...",
+      "emailSent": "Check your email for a sign-in link.",
+      "error": "Failed to send sign-in link"
+    },
     "forgotPassword": {
       "link": "Forgot password?",
       "title": "Reset Password",

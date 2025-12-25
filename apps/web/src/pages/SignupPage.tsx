@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@mobileworship/shared';
 
@@ -11,8 +11,8 @@ export function SignupPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [signupComplete, setSignupComplete] = useState(false);
   const { signUp } = useAuth();
-  const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,12 +21,49 @@ export function SignupPage() {
 
     try {
       await signUp(email, password, name, churchName);
-      navigate('/dashboard');
+      setSignupComplete(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
     } finally {
       setLoading(false);
     }
+  }
+
+  if (signupComplete) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-8">
+        <div className="w-full max-w-md text-center">
+          <div className="mb-6">
+            <svg
+              className="mx-auto h-16 w-16 text-primary-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold mb-4">{t('auth.signup.checkEmail.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            {t('auth.signup.checkEmail.description', { email })}
+          </p>
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg mb-6">
+            {t('auth.signup.checkEmail.hint')}
+          </div>
+          <Link
+            to="/login"
+            className="text-primary-600 hover:underline"
+          >
+            {t('auth.forgotPassword.backToLogin')}
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (
