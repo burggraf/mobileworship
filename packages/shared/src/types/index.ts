@@ -15,6 +15,52 @@ export * from './display';
 // Domain types
 export type Role = 'admin' | 'editor' | 'operator';
 
+// Membership type for multi-church support
+export interface ChurchMembership {
+  id: string;
+  userId: string;
+  churchId: string;
+  role: Role;
+  lastAccessedAt: string;
+  createdAt: string;
+  // Joined data
+  church?: {
+    id: string;
+    name: string;
+  };
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+// Invitation type
+export interface Invitation {
+  id: string;
+  churchId: string;
+  email: string;
+  role: Role;
+  invitedBy: string;
+  token: string;
+  expiresAt: string;
+  acceptedAt: string | null;
+  createdAt: string;
+  // Joined data
+  invitedByUser?: {
+    name: string;
+  };
+}
+
+// Invitation status helper
+export type InvitationStatus = 'pending' | 'expired' | 'accepted';
+
+export function getInvitationStatus(invitation: Invitation): InvitationStatus {
+  if (invitation.acceptedAt) return 'accepted';
+  if (new Date(invitation.expiresAt) < new Date()) return 'expired';
+  return 'pending';
+}
+
 export type Permission =
   | 'church:manage'
   | 'church:users'
