@@ -17,6 +17,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { ControlPage } from './pages/ControlPage';
 import { PresentationPage } from './pages/PresentationPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { AcceptInvitePage } from './pages/AcceptInvitePage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -45,6 +46,7 @@ export function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/accept-invite" element={<AcceptInvitePage />} />
                 <Route path="/dashboard" element={<DashboardLayout />}>
                   <Route index element={<SongsPage />} />
                   <Route path="songs" element={<SongsPage />} />

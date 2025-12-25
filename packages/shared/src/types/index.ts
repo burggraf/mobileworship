@@ -50,6 +50,10 @@ export interface Invitation {
   invitedByUser?: {
     name: string;
   };
+  church?: {
+    id: string;
+    name: string;
+  };
 }
 
 // Invitation status helper

@@ -172,6 +172,7 @@ export function useInvitations() {
       expiresAt: data.expires_at,
       acceptedAt: data.accepted_at,
       createdAt: data.created_at,
+      church: data.churches ? { id: data.church_id, name: data.churches.name } : undefined,
     };
   };
 
