@@ -40,6 +40,8 @@ apps/tv/android-tv/.gradle/
 
 # Testing
 coverage/
+playwright-report/
+test-results/
 
 # Supabase
 supabase/.branches/
