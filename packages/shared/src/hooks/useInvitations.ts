@@ -72,7 +72,7 @@ export function useInvitations() {
         .from('users')
         .select('id')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
       if (existingUser) {
         const { data: existingMember } = await supabase
@@ -80,7 +80,7 @@ export function useInvitations() {
           .select('id')
           .eq('church_id', user!.churchId)
           .eq('user_id', existingUser.id)
-          .single();
+          .maybeSingle();
 
         if (existingMember) {
           throw new Error('User is already a member of this church');
@@ -95,7 +95,7 @@ export function useInvitations() {
         .eq('email', email)
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
-        .single();
+        .maybeSingle();
 
       if (existingInvite) {
         throw new Error('An invitation is already pending for this email');
@@ -116,23 +116,14 @@ export function useInvitations() {
 
       // Send invitation email via Edge Function
       try {
-        const { data: session } = await supabase.auth.getSession();
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invitation`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.session?.access_token}`,
-            },
-            body: JSON.stringify({
-              invitationId: data.id,
-              language: localStorage.getItem('i18nextLng') || 'en',
-            }),
-          }
-        );
-        if (!response.ok) {
-          console.warn('Failed to send invitation email:', await response.text());
+        const { error: fnError } = await supabase.functions.invoke('send-invitation', {
+          body: {
+            invitationId: data.id,
+            language: localStorage.getItem('i18nextLng') || 'en',
+          },
+        });
+        if (fnError) {
+          console.warn('Failed to send invitation email:', fnError);
         }
       } catch (emailError) {
         // Log but don't fail - invitation was created successfully
@@ -161,23 +152,14 @@ export function useInvitations() {
 
       // Send invitation email via Edge Function
       try {
-        const { data: session } = await supabase.auth.getSession();
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invitation`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.session?.access_token}`,
-            },
-            body: JSON.stringify({
-              invitationId,
-              language: localStorage.getItem('i18nextLng') || 'en',
-            }),
-          }
-        );
-        if (!response.ok) {
-          console.warn('Failed to send invitation email:', await response.text());
+        const { error: fnError } = await supabase.functions.invoke('send-invitation', {
+          body: {
+            invitationId,
+            language: localStorage.getItem('i18nextLng') || 'en',
+          },
+        });
+        if (fnError) {
+          console.warn('Failed to send invitation email:', fnError);
         }
       } catch (emailError) {
         console.warn('Error sending invitation email:', emailError);

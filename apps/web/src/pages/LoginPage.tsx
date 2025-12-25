@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@mobileworship/shared';
 
@@ -15,6 +15,8 @@ export function LoginPage() {
   const [emailSent, setEmailSent] = useState(false);
   const { signIn, signInWithGoogle, signInWithMagicLink, resetPasswordForEmail } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
   async function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,7 +25,7 @@ export function LoginPage() {
 
     try {
       await signIn(email, password);
-      navigate('/dashboard');
+      navigate(redirectUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
     } finally {
@@ -202,7 +204,10 @@ export function LoginPage() {
 
             <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
               {t('auth.noAccount')}{' '}
-              <Link to="/signup" className="text-primary-600 hover:underline">
+              <Link
+                to={redirectUrl !== '/dashboard' ? `/signup?redirect=${encodeURIComponent(redirectUrl)}` : '/signup'}
+                className="text-primary-600 hover:underline"
+              >
                 {t('auth.signUp')}
               </Link>
             </p>

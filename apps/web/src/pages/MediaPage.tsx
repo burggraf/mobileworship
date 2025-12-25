@@ -60,38 +60,40 @@ export function MediaPage() {
         )}
       </div>
 
-      {/* Tab Bar */}
-      <div className="border-b dark:border-gray-700 mb-6">
-        <nav className="flex gap-4" aria-label="Tabs">
-          <button
-            onClick={() => setActiveTab('myMedia')}
-            className={`
-              px-4 py-2 text-sm font-medium border-b-2 transition-colors
-              ${activeTab === 'myMedia'
-                ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-              }
-            `}
-          >
-            {t('media.tabs.myMedia')}
-          </button>
-          <button
-            onClick={() => setActiveTab('freeBackgrounds')}
-            className={`
-              px-4 py-2 text-sm font-medium border-b-2 transition-colors
-              ${activeTab === 'freeBackgrounds'
-                ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-              }
-            `}
-          >
-            {t('media.tabs.freeBackgrounds')}
-          </button>
-        </nav>
-      </div>
+      {/* Tab Bar - only show tabs if user can write (import backgrounds) */}
+      {can('media:write') && (
+        <div className="border-b dark:border-gray-700 mb-6">
+          <nav className="flex gap-4" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('myMedia')}
+              className={`
+                px-4 py-2 text-sm font-medium border-b-2 transition-colors
+                ${activeTab === 'myMedia'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }
+              `}
+            >
+              {t('media.tabs.myMedia')}
+            </button>
+            <button
+              onClick={() => setActiveTab('freeBackgrounds')}
+              className={`
+                px-4 py-2 text-sm font-medium border-b-2 transition-colors
+                ${activeTab === 'freeBackgrounds'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }
+              `}
+            >
+              {t('media.tabs.freeBackgrounds')}
+            </button>
+          </nav>
+        </div>
+      )}
 
       {/* Tab Content */}
-      {activeTab === 'myMedia' ? (
+      {activeTab === 'myMedia' || !can('media:write') ? (
         isLoading ? (
           <div className="text-gray-500">{t('common.loading')}</div>
         ) : media.length === 0 ? (

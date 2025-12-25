@@ -62,6 +62,8 @@ serve(async (req) => {
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     const appUrl = Deno.env.get('APP_URL') || 'http://localhost:5173';
 
+    console.log('send-invitation called, RESEND_API_KEY configured:', !!resendApiKey);
+
     if (!resendApiKey) {
       console.log('RESEND_API_KEY not configured, skipping email send');
       return new Response(
@@ -89,6 +91,7 @@ serve(async (req) => {
 
     const { data: { user: authUser }, error: authError } = await userClient.auth.getUser();
     if (authError || !authUser) {
+      console.log('Auth error:', authError);
       return new Response(
         JSON.stringify({ error: 'Authentication failed' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -101,6 +104,8 @@ serve(async (req) => {
     const t = translations[lang];
     const roles = roleNames[lang];
 
+    console.log('Processing invitation:', invitationId, 'language:', lang);
+
     if (!invitationId) {
       return new Response(
         JSON.stringify({ error: 'invitationId is required' }),
@@ -108,28 +113,43 @@ serve(async (req) => {
       );
     }
 
-    // Fetch the invitation with church and inviter details
+    // Fetch the invitation (without JOINs to avoid foreign key issues)
     const { data: invitation, error: inviteError } = await supabase
       .from('invitations')
-      .select(`
-        id,
-        email,
-        role,
-        token,
-        expires_at,
-        church_id,
-        invited_by,
-        churches:church_id (name),
-        users:invited_by (name, email)
-      `)
+      .select('id, email, role, token, expires_at, church_id, invited_by')
       .eq('id', invitationId)
       .single();
 
     if (inviteError || !invitation) {
+      console.log('Invitation not found:', inviteError);
       return new Response(
-        JSON.stringify({ error: 'Invitation not found' }),
+        JSON.stringify({ error: 'Invitation not found', details: inviteError?.message }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    console.log('Found invitation for:', invitation.email);
+
+    // Fetch church name separately
+    let churchName = lang === 'es' ? 'tu iglesia' : 'your church';
+    if (invitation.church_id) {
+      const { data: church } = await supabase
+        .from('churches')
+        .select('name')
+        .eq('id', invitation.church_id)
+        .single();
+      if (church?.name) churchName = church.name;
+    }
+
+    // Fetch inviter name separately
+    let inviterName = lang === 'es' ? 'Un miembro del equipo' : 'A team member';
+    if (invitation.invited_by) {
+      const { data: inviter } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', invitation.invited_by)
+        .single();
+      if (inviter?.name) inviterName = inviter.name;
     }
 
     // Verify the requesting user is from the same church
@@ -141,14 +161,13 @@ serve(async (req) => {
       .single();
 
     if (!membership || membership.role !== 'admin') {
+      console.log('User is not admin:', membership?.role);
       return new Response(
         JSON.stringify({ error: 'Only admins can send invitations' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const churchName = invitation.churches?.name || (lang === 'es' ? 'tu iglesia' : 'your church');
-    const inviterName = invitation.users?.name || (lang === 'es' ? 'Un miembro del equipo' : 'A team member');
     const acceptUrl = `${appUrl}/accept-invite?token=${invitation.token}`;
     const expiresDate = new Date(invitation.expires_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
       year: 'numeric',
@@ -158,6 +177,8 @@ serve(async (req) => {
     const roleName = roles[invitation.role as keyof typeof roles] || invitation.role;
     const article = lang === 'en' ? (invitation.role === 'admin' ? 'an' : 'a') : '';
 
+    console.log('Sending email to:', invitation.email, 'from app:', appUrl);
+
     // Send email via Resend
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -166,7 +187,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: 'Mobile Worship <noreply@mobileworship.app>',
+        from: 'Mobile Worship <noreply@mobileworship.com>',
         to: [invitation.email],
         subject: t.subject(churchName),
         html: `

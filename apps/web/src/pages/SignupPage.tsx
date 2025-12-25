@@ -1,10 +1,16 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@mobileworship/shared';
 
 export function SignupPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
+
+  // Check if this is an invitation signup (redirect to accept-invite)
+  const isInvitationSignup = redirectUrl?.includes('/accept-invite');
+
   const [name, setName] = useState('');
   const [churchName, setChurchName] = useState('');
   const [email, setEmail] = useState('');
@@ -12,7 +18,7 @@ export function SignupPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [signupComplete, setSignupComplete] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, signUpForInvitation } = useAuth();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +26,13 @@ export function SignupPage() {
     setLoading(true);
 
     try {
-      await signUp(email, password, name, churchName);
+      if (isInvitationSignup && redirectUrl) {
+        // Signing up to accept an invitation - no church needed
+        await signUpForInvitation(email, password, name, redirectUrl);
+      } else {
+        // Regular signup - create user and church
+        await signUp(email, password, name, churchName);
+      }
       setSignupComplete(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
@@ -69,7 +81,13 @@ export function SignupPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-8 text-center">{t('auth.createAccount')}</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center">{t('auth.createAccount')}</h1>
+
+        {isInvitationSignup && (
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+            {t('auth.invitationSignup', 'Create an account to accept your invitation.')}
+          </p>
+        )}
 
         {error && (
           <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
@@ -92,19 +110,21 @@ export function SignupPage() {
             />
           </div>
 
-          <div>
-            <label htmlFor="churchName" className="block text-sm font-medium mb-1">
-              {t('auth.churchName')}
-            </label>
-            <input
-              id="churchName"
-              type="text"
-              value={churchName}
-              onChange={(e) => setChurchName(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-700"
-            />
-          </div>
+          {!isInvitationSignup && (
+            <div>
+              <label htmlFor="churchName" className="block text-sm font-medium mb-1">
+                {t('auth.churchName')}
+              </label>
+              <input
+                id="churchName"
+                type="text"
+                value={churchName}
+                onChange={(e) => setChurchName(e.target.value)}
+                required
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-700"
+              />
+            </div>
+          )}
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">

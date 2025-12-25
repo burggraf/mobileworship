@@ -19,6 +19,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInWithMagicLink: (email: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, churchName: string) => Promise<void>;
+  signUpForInvitation: (email: string, password: string, name: string, redirectUrl: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPasswordForEmail: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
@@ -83,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Get memberships
-    const { data: memberships, error: membershipError } = await supabase
+    const { data: memberships } = await supabase
       .from('church_memberships')
       .select('church_id, role, last_accessed_at')
       .eq('user_id', authUser.id)
@@ -106,11 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const currentMembership =
       memberships.find((m) => m.church_id === currentChurchId) || memberships[0];
 
-    // Update JWT metadata if needed
+    // Update JWT metadata if needed and refresh session to get new token
     if (authUser.user_metadata?.current_church_id !== currentMembership.church_id) {
       await supabase.auth.updateUser({
         data: { current_church_id: currentMembership.church_id },
       });
+      await supabase.auth.refreshSession();
     }
 
     setUser({
@@ -178,12 +180,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const result = rpcResult as { church_id: string; user_id: string };
 
-      // Update JWT with new church ID
+      // Update JWT with new church ID and refresh session to get new token
       await supabase.auth.updateUser({
         data: { current_church_id: result.church_id },
       });
+      await supabase.auth.refreshSession();
 
       await fetchUserProfile(authData.user);
+    } finally {
+      isSigningUp.current = false;
+    }
+  }
+
+  // Sign up for users accepting an invitation (no church created)
+  async function signUpForInvitation(email: string, password: string, name: string, redirectUrl: string) {
+    isSigningUp.current = true;
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          // Redirect to the accept-invite page after email confirmation
+          emailRedirectTo: `${window.location.origin}${redirectUrl}`,
+          data: {
+            name, // Store name in user metadata for later
+            current_church_id: null,
+          },
+        },
+      });
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('Failed to create user');
+
+      // Note: We don't create a church or user profile here
+      // That will happen when they accept the invitation
+      // The user profile will be created in AcceptInvitePage
     } finally {
       isSigningUp.current = false;
     }
@@ -213,11 +244,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (validateError) throw validateError;
 
-    // Update JWT metadata
+    // Update JWT metadata and refresh session to get new token
     const { error: updateError } = await supabase.auth.updateUser({
       data: { current_church_id: churchId },
     });
     if (updateError) throw updateError;
+    await supabase.auth.refreshSession();
 
     // Refresh user profile
     const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -240,6 +272,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithGoogle,
         signInWithMagicLink,
         signUp,
+        signUpForInvitation,
         signOut,
         resetPasswordForEmail,
         updatePassword,

@@ -36,48 +36,72 @@ export async function getDomains(): Promise<string[]> {
 }
 
 /**
- * Create a new temporary email account
+ * Sleep helper
  */
-export async function createAccount(prefix?: string): Promise<MailTmAccount> {
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Create a new temporary email account with retry logic for rate limiting
+ */
+export async function createAccount(prefix?: string, maxRetries = 5): Promise<MailTmAccount> {
   const domains = await getDomains();
   const domain = domains[0];
   const randomPrefix = prefix || `test${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
   const address = `${randomPrefix}@${domain}`;
   const password = `Pass${Date.now()}!`;
 
-  // Create account
-  const createResponse = await fetch(`${API_BASE}/accounts`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ address, password }),
-  });
+  let lastError: Error | null = null;
 
-  if (!createResponse.ok) {
-    const error = await createResponse.text();
-    throw new Error(`Failed to create account: ${createResponse.status} - ${error}`);
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    // Create account
+    const createResponse = await fetch(`${API_BASE}/accounts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address, password }),
+    });
+
+    if (createResponse.status === 429) {
+      // Rate limited - wait with exponential backoff
+      const waitTime = Math.min(30000, 2000 * Math.pow(2, attempt));
+      console.log(`mail.tm rate limited, waiting ${waitTime / 1000}s before retry ${attempt + 1}/${maxRetries}...`);
+      await sleep(waitTime);
+      continue;
+    }
+
+    if (!createResponse.ok) {
+      const error = await createResponse.text();
+      lastError = new Error(`Failed to create account: ${createResponse.status} - ${error}`);
+      // For non-rate-limit errors, wait briefly and retry
+      await sleep(1000);
+      continue;
+    }
+
+    const accountData = await createResponse.json();
+
+    // Get auth token
+    const tokenResponse = await fetch(`${API_BASE}/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address, password }),
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error(`Failed to get token: ${tokenResponse.status}`);
+    }
+
+    const tokenData = await tokenResponse.json();
+
+    return {
+      id: accountData.id,
+      address,
+      password,
+      token: tokenData.token,
+    };
   }
 
-  const accountData = await createResponse.json();
-
-  // Get auth token
-  const tokenResponse = await fetch(`${API_BASE}/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ address, password }),
-  });
-
-  if (!tokenResponse.ok) {
-    throw new Error(`Failed to get token: ${tokenResponse.status}`);
-  }
-
-  const tokenData = await tokenResponse.json();
-
-  return {
-    id: accountData.id,
-    address,
-    password,
-    token: tokenData.token,
-  };
+  throw lastError || new Error('Failed to create account after max retries');
 }
 
 /**

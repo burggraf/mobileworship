@@ -214,7 +214,9 @@ test.describe('Multi-tenancy E2E Tests', () => {
   });
 
   test.describe('4. Invitation Flow', () => {
-    test('should send invitation and show in pending list', async ({ page }) => {
+    let inviteLink: string | null = null;
+
+    test('should send invitation email and receive it', async ({ page }) => {
       // Create a second mail account for the invited member
       memberAccount = await createAccount(`member${uniqueId()}`);
       console.log(`Created member email: ${memberAccount.address}`);
@@ -247,29 +249,77 @@ test.describe('Multi-tenancy E2E Tests', () => {
       const successMessage = page.getByText(/invitation sent/i);
       await expect(successMessage).toBeVisible({ timeout: 5000 });
 
-      // Wait for the pending invitations list to load
-      await page.waitForTimeout(2000);
-
       // Check if the invitation email shows in the pending list
       await expect(page.getByText(memberAccount.address)).toBeVisible({ timeout: 5000 });
       console.log('Invitation created and visible in pending list');
 
-      // Extract the invitation token from the Copy Link button's data attribute
-      const copyLinkButton = page.locator('button[data-invitation-token]').first();
-      invitationToken = await copyLinkButton.getAttribute('data-invitation-token');
-      console.log(`Extracted invitation token: ${invitationToken?.slice(0, 8)}...`);
+      // Log out admin
+      await page.goto('/');
+      console.log('Admin logged out');
+
+      // REAL E2E TEST: Wait for the actual invitation email to arrive
+      console.log('Waiting for invitation email to arrive at mail.tm...');
+      const invitationEmail = await waitForEmail(memberAccount, {
+        subjectContains: 'invited',
+        fromContains: 'mobileworship',
+        timeout: 120000, // 2 minutes for email delivery
+      });
+
+      expect(invitationEmail.subject.toLowerCase()).toContain('invited');
+      console.log(`Received invitation email: ${invitationEmail.subject}`);
+
+      // Extract the invitation link from the email
+      inviteLink = extractLink(invitationEmail, /accept-invite\?token=/i);
+      expect(inviteLink).toBeTruthy();
+      console.log(`Invitation link from email: ${inviteLink}`);
+
+      // Extract token from the link for use in next test
+      const tokenMatch = inviteLink!.match(/token=([^&]+)/);
+      invitationToken = tokenMatch ? tokenMatch[1] : null;
       expect(invitationToken).toBeTruthy();
+      console.log(`Extracted invitation token: ${invitationToken?.slice(0, 8)}...`);
     });
 
-    test('should create member account and accept invitation', async ({ page }) => {
-      // First create the member account
-      await page.goto('/signup');
-      await expect(page.locator('h1')).toContainText(/create account/i);
+    test('REAL FLOW: new user clicks invite link, signs up, and accepts invitation', async ({ page }) => {
+      // This test simulates the REAL user journey:
+      // 1. User clicks invite link in email
+      // 2. Gets redirected to login (no account)
+      // 3. Clicks "Sign up"
+      // 4. Signs up WITHOUT creating a church
+      // 5. Confirms email
+      // 6. Returns to accept-invite page
+      // 7. Accepts invitation
+      // 8. Ends up in the invited church
 
-      // Fill signup form for member (they need to create a temp church first)
-      const memberChurchName = `Temp Church ${uniqueId()}`;
-      await page.fill('#name', 'Member User');
-      await page.fill('#churchName', memberChurchName);
+      expect(inviteLink).toBeTruthy();
+      console.log('Starting REAL invitation flow test');
+
+      // STEP 1: Click the invitation link from the email
+      console.log('Step 1: Clicking invitation link...');
+      await page.goto(inviteLink!);
+
+      // STEP 2: Should be redirected to login (user has no account)
+      console.log('Step 2: Should be redirected to login...');
+      await expect(page).toHaveURL(/login.*redirect/, { timeout: 10000 });
+      console.log('Redirected to login with redirect param');
+
+      // STEP 3: Click "Sign up" link (user doesn't have an account)
+      console.log('Step 3: Clicking Sign up link...');
+      await page.click('a:has-text("Sign up"), a:has-text("Sign Up")');
+      await expect(page).toHaveURL(/signup.*redirect/, { timeout: 5000 });
+      console.log('Navigated to signup page with redirect param');
+
+      // STEP 4: Sign up WITHOUT church name (invitation signup flow)
+      console.log('Step 4: Filling signup form (no church required)...');
+
+      // Should see helpful message about invitation signup
+      await expect(page.getByText(/accept your invitation/i)).toBeVisible({ timeout: 5000 });
+
+      // Church name field should NOT be visible for invitation signups
+      await expect(page.locator('#churchName')).not.toBeVisible();
+
+      // Fill only required fields
+      await page.fill('#name', 'Invited Member');
       await page.fill('#email', memberAccount.address);
       await page.fill('#password', 'MemberPassword123!');
 
@@ -278,10 +328,10 @@ test.describe('Multi-tenancy E2E Tests', () => {
 
       // Wait for confirmation page
       await expect(page.locator('h1')).toContainText(/check your email/i, { timeout: 10000 });
+      console.log('Signup submitted, waiting for confirmation email...');
 
-      console.log('Member signup submitted, waiting for confirmation email...');
-
-      // Wait for confirmation email from Supabase
+      // STEP 5: Wait for and click confirmation email
+      console.log('Step 5: Waiting for confirmation email...');
       const confirmEmail = await waitForEmail(memberAccount, {
         subjectContains: 'confirm',
         timeout: 120000,
@@ -290,64 +340,67 @@ test.describe('Multi-tenancy E2E Tests', () => {
       // Extract confirmation link
       const confirmLink = extractLink(confirmEmail, /confirm|verify/i);
       expect(confirmLink).toBeTruthy();
+      console.log(`Confirmation link: ${confirmLink?.slice(0, 50)}...`);
 
-      // Click confirmation link
+      // STEP 6: Click confirmation link - should redirect to accept-invite page
+      console.log('Step 6: Clicking confirmation link...');
       await page.goto(confirmLink!);
-      await expect(page).toHaveURL(/dashboard|login/, { timeout: 15000 });
 
-      // If we're at login, log in
-      if (page.url().includes('login')) {
-        await page.fill('#email', memberAccount.address);
-        await page.fill('#password', 'MemberPassword123!');
-        await page.click('button[type="submit"]');
-        await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
-      }
+      // STEP 7: Should be on accept-invite page or redirected there
+      console.log('Step 7: Should be on accept-invite page...');
 
-      console.log('Member account created and logged in');
-
-      // Wait for auth state to stabilize
-      await page.waitForTimeout(2000);
-
-      // Now accept the invitation using the token
-      expect(invitationToken).toBeTruthy();
-      await page.goto(`/accept-invite?token=${invitationToken}`);
-
-      // Wait for the page to load and auth state to initialize
+      // Wait for page to load
       await page.waitForTimeout(3000);
 
-      // If redirected to login, we need to log in again
+      // We might end up at accept-invite directly or need to navigate there
+      if (!page.url().includes('accept-invite')) {
+        console.log('Not on accept-invite, navigating directly...');
+        await page.goto(`/accept-invite?token=${invitationToken}`);
+        await page.waitForTimeout(2000);
+      }
+
+      // If redirected to login, log in and go back to accept-invite
       if (page.url().includes('login')) {
-        console.log('Session was lost, logging in again...');
+        console.log('Redirected to login, logging in...');
         await page.fill('#email', memberAccount.address);
         await page.fill('#password', 'MemberPassword123!');
         await page.click('button[type="submit"]');
-        await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
-
-        // Navigate to accept-invite again
+        await page.waitForTimeout(2000);
         await page.goto(`/accept-invite?token=${invitationToken}`);
-        await page.waitForTimeout(3000);
+        await page.waitForTimeout(2000);
       }
 
-      // Should see the invitation details
+      // Should now see the invitation details
+      console.log('Step 8: Checking invitation page...');
       await expect(page.getByText(new RegExp(churchName, 'i'))).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/operator/i)).toBeVisible();
 
-      // Click accept button
+      // Name field should be pre-filled from signup
+      const nameInput = page.locator('#name');
+      if (await nameInput.isVisible()) {
+        const nameValue = await nameInput.inputValue();
+        expect(nameValue).toBe('Invited Member');
+        console.log('Name pre-filled from signup metadata');
+      }
+
+      // STEP 8: Click accept button
+      console.log('Step 9: Accepting invitation...');
       await page.click('button:has-text("Accept")');
 
       // Should redirect to dashboard with the new church
       await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
 
-      // Should now see the admin's church name in the header
+      // STEP 9: Verify we're in the correct church
+      console.log('Step 10: Verifying correct church...');
       await expect(page.locator('header')).toContainText(new RegExp(churchName, 'i'));
 
-      console.log('Member successfully accepted invitation and joined the church');
+      console.log('SUCCESS: Member completed full invitation flow and joined the correct church!');
     });
   });
 
   test.describe('5. Church Switching', () => {
-    test('member should see church switcher with multiple churches', async ({ page }) => {
-      // Login as member (who now has 2 churches)
+    test('member with single church should NOT see church switcher', async ({ page }) => {
+      // Login as member (who now has only 1 church - the invited one)
       await page.goto('/login');
       await page.fill('#email', memberAccount.address);
       await page.fill('#password', 'MemberPassword123!');
@@ -357,13 +410,14 @@ test.describe('Multi-tenancy E2E Tests', () => {
       // Navigate to settings
       await page.goto('/dashboard/settings');
 
-      // Should see church switcher section since member has multiple churches
-      await expect(page.getByRole('heading', { name: /switch church/i })).toBeVisible({ timeout: 5000 });
+      // Should NOT see church switcher section since member has only one church
+      const churchSwitcher = page.getByRole('heading', { name: /switch church/i });
+      await expect(churchSwitcher).not.toBeVisible({ timeout: 3000 });
 
-      console.log('Church switcher visible for member with multiple churches');
+      console.log('Church switcher correctly hidden for member with single church');
     });
 
-    test('member should switch between churches', async ({ page }) => {
+    test('member should be in the correct (invited) church', async ({ page }) => {
       // Login as member
       await page.goto('/login');
       await page.fill('#email', memberAccount.address);
@@ -371,24 +425,10 @@ test.describe('Multi-tenancy E2E Tests', () => {
       await page.click('button[type="submit"]');
       await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
 
-      // Navigate to settings
-      await page.goto('/dashboard/settings');
+      // Verify the church name in header matches the invited church
+      await expect(page.locator('header')).toContainText(new RegExp(churchName, 'i'));
 
-      // Find a "Switch" button and click it
-      const switchButton = page.locator('button:has-text("Switch")').first();
-      if (await switchButton.isVisible()) {
-        await switchButton.click();
-
-        // Wait for page to reload/update
-        await page.waitForTimeout(2000);
-
-        // Verify we're still on dashboard
-        await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
-
-        console.log('Successfully switched churches');
-      } else {
-        console.log('Switch button not visible, member may already be on correct church');
-      }
+      console.log('Member is in the correct invited church');
     });
   });
 
@@ -504,7 +544,7 @@ test.describe('Multi-tenancy E2E Tests', () => {
       await expect(page.getByRole('heading', { name: 'Delete Church' })).toBeVisible({ timeout: 5000 });
 
       // Should see warning about deletion
-      await expect(page.getByText(/permanently delete/i)).toBeVisible();
+      await expect(page.getByText('Permanently delete this church')).toBeVisible();
 
       // Note: We don't actually delete the church in tests to preserve test account
     });

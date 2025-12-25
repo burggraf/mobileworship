@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth, useInvitations, useSupabase } from '@mobileworship/shared';
+import { useInvitations, useSupabase } from '@mobileworship/shared';
 import { getInvitationStatus, type Invitation } from '@mobileworship/shared';
 import { PageLoading } from '../components/LoadingSpinner';
+import type { User as AuthUser } from '@supabase/supabase-js';
 
 export function AcceptInvitePage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, isLoading: isAuthLoading } = useAuth();
   const supabase = useSupabase();
   const { acceptInvitation, getInvitationByToken } = useInvitations();
 
@@ -19,6 +19,8 @@ export function AcceptInvitePage() {
   const [isAccepting, setIsAccepting] = useState(false);
   const [needsProfile, setNeedsProfile] = useState(false);
   const [userName, setUserName] = useState('');
+  // Store the raw auth user (not the enriched useAuth user which requires membership)
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
 
   const token = searchParams.get('token');
 
@@ -30,16 +32,17 @@ export function AcceptInvitePage() {
         return;
       }
 
-      // Wait for auth to finish loading before checking user
-      if (isAuthLoading) {
-        return; // Will re-run when auth finishes loading
-      }
+      // Check raw auth session - don't use useAuth which requires church membership
+      // Invited users may not have a membership yet, but they ARE authenticated
+      const { data: { user: sessionUser } } = await supabase.auth.getUser();
 
-      // Must be logged in to accept invitation
-      if (!user) {
+      if (!sessionUser) {
+        // Not authenticated at all - redirect to login
         navigate(`/login?redirect=/accept-invite?token=${token}`);
         return;
       }
+
+      setAuthUser(sessionUser);
 
       try {
         const inviteData = await getInvitationByToken(token);
@@ -66,7 +69,7 @@ export function AcceptInvitePage() {
         }
 
         // Check if user email matches invitation email
-        if (user.email !== inviteData.email) {
+        if (sessionUser.email !== inviteData.email) {
           setError(t('invite.emailMismatch'));
           setIsLoading(false);
           return;
@@ -76,11 +79,16 @@ export function AcceptInvitePage() {
         const { data: existingUser } = await supabase
           .from('users')
           .select('id')
-          .eq('id', user.id)
+          .eq('id', sessionUser.id)
           .single();
 
         if (!existingUser) {
           setNeedsProfile(true);
+          // Pre-fill name from user metadata if available (from invitation signup)
+          const nameFromMetadata = sessionUser.user_metadata?.name;
+          if (nameFromMetadata) {
+            setUserName(nameFromMetadata);
+          }
         }
 
         setIsLoading(false);
@@ -92,10 +100,10 @@ export function AcceptInvitePage() {
     }
 
     loadInvitation();
-  }, [token, user, isAuthLoading, navigate, getInvitationByToken, supabase, t]);
+  }, [token, navigate, getInvitationByToken, supabase, t]);
 
   async function handleAccept() {
-    if (!token || !invitation) return;
+    if (!token || !invitation || !authUser) return;
 
     // Validate name if needed
     if (needsProfile && !userName.trim()) {
@@ -108,12 +116,15 @@ export function AcceptInvitePage() {
 
     try {
       // Create user profile if needed
-      if (needsProfile && user) {
+      if (needsProfile) {
+        if (!authUser.email) {
+          throw new Error('User email is required');
+        }
         await supabase
           .from('users')
           .insert({
-            id: user.id,
-            email: user.email,
+            id: authUser.id,
+            email: authUser.email,
             name: userName.trim(),
           });
       }
@@ -121,10 +132,11 @@ export function AcceptInvitePage() {
       // Accept invitation
       const result = await acceptInvitation(token);
 
-      // Update JWT with current church
+      // Update JWT with current church and refresh session
       await supabase.auth.updateUser({
         data: { current_church_id: result.church_id },
       });
+      await supabase.auth.refreshSession();
 
       // Navigate to dashboard
       navigate('/dashboard');
