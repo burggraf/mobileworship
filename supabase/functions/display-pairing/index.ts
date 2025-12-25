@@ -90,9 +90,19 @@ serve(async (req) => {
         { global: { headers: { Authorization: authHeader } } }
       );
 
+      // Get the authenticated user's ID from the JWT
+      const { data: { user: authUser }, error: authError } = await userClient.auth.getUser();
+      if (authError || !authUser) {
+        return new Response(
+          JSON.stringify({ error: 'Authentication failed' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const { data: userData, error: userError } = await userClient
         .from('users')
         .select('church_id')
+        .eq('id', authUser.id)
         .single();
 
       if (userError || !userData) {
