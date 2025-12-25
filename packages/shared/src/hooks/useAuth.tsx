@@ -23,6 +23,8 @@ interface AuthContextType {
   resetPasswordForEmail: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   can: (permission: Permission) => boolean;
+  switchChurch: (churchId: string) => Promise<void>;
+  hasMultipleChurches: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -31,11 +33,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = useSupabase();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // Track when we're in the middle of signup to prevent race condition
+  const [hasMultipleChurches, setHasMultipleChurches] = useState(false);
   const isSigningUp = useRef(false);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         fetchUserProfile(session.user);
@@ -44,16 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      // Skip profile fetch if we're in the middle of signup
       if (isSigningUp.current) {
         return;
       }
 
-      // Clean up URL hash after auth callback (removes trailing #)
       if (event === 'SIGNED_IN' && window.location.href.includes('#')) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
@@ -62,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchUserProfile(session.user);
       } else {
         setUser(null);
+        setHasMultipleChurches(false);
         setIsLoading(false);
       }
     });
@@ -70,23 +69,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   async function fetchUserProfile(authUser: User) {
-    const { data, error } = await supabase
+    // Get user profile
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('*')
       .eq('id', authUser.id)
       .single();
 
-    if (error || !data) {
+    if (userError || !userData) {
       setUser(null);
-    } else {
-      setUser({
-        id: data.id,
-        email: data.email,
-        churchId: data.church_id,
-        role: data.role as Role,
-        name: data.name,
+      setIsLoading(false);
+      return;
+    }
+
+    // Get memberships
+    const { data: memberships } = await supabase
+      .from('church_memberships')
+      .select('church_id, role, last_accessed_at')
+      .eq('user_id', authUser.id)
+      .order('last_accessed_at', { ascending: false });
+
+    if (!memberships || memberships.length === 0) {
+      // User has no church memberships - edge case
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+
+    setHasMultipleChurches(memberships.length > 1);
+
+    // Determine current church: use JWT metadata or most recent
+    const currentChurchId =
+      authUser.user_metadata?.current_church_id || memberships[0].church_id;
+
+    // Find membership for current church
+    const currentMembership =
+      memberships.find((m) => m.church_id === currentChurchId) || memberships[0];
+
+    // Update JWT metadata if needed
+    if (authUser.user_metadata?.current_church_id !== currentMembership.church_id) {
+      await supabase.auth.updateUser({
+        data: { current_church_id: currentMembership.church_id },
       });
     }
+
+    setUser({
+      id: userData.id,
+      email: userData.email,
+      churchId: currentMembership.church_id,
+      role: currentMembership.role as Role,
+      name: userData.name,
+    });
+
     setIsLoading(false);
   }
 
@@ -116,23 +150,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signUp(email: string, password: string, name: string, churchName: string) {
-    // Prevent onAuthStateChange from fetching profile during signup
     isSigningUp.current = true;
 
     try {
-      // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: { current_church_id: null }, // Will be set by create_church_and_user
         },
       });
       if (authError) throw authError;
       if (!authData.user) throw new Error('Failed to create user');
 
-      // Create church and user profile atomically via RPC (bypasses RLS)
-      const { error: rpcError } = await supabase.rpc('create_church_and_user', {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_church_and_user', {
         p_user_id: authData.user.id,
         p_church_name: churchName,
         p_user_name: name,
@@ -140,7 +172,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (rpcError) throw rpcError;
 
-      // Now fetch the profile since everything is set up
+      // Update JWT with new church ID
+      await supabase.auth.updateUser({
+        data: { current_church_id: rpcResult.church_id },
+      });
+
       await fetchUserProfile(authData.user);
     } finally {
       isSigningUp.current = false;
@@ -164,6 +200,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }
 
+  async function switchChurch(churchId: string) {
+    // Validate membership via RPC
+    const { error: validateError } = await supabase.rpc('set_current_church', {
+      p_church_id: churchId,
+    });
+    if (validateError) throw validateError;
+
+    // Update JWT metadata
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: { current_church_id: churchId },
+    });
+    if (updateError) throw updateError;
+
+    // Refresh user profile
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      await fetchUserProfile(authUser);
+    }
+  }
+
   function can(permission: Permission): boolean {
     if (!user) return false;
     return hasPermission(user.role, permission);
@@ -182,6 +238,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         resetPasswordForEmail,
         updatePassword,
         can,
+        switchChurch,
+        hasMultipleChurches,
       }}
     >
       {children}
