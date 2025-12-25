@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, useRef } from 'react';
+import { useState, FormEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSupabase, useAuth, claimDisplay } from '@mobileworship/shared';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,14 +19,7 @@ export function AddDisplayModal({ isOpen, onClose }: AddDisplayModalProps) {
   const [location, setLocation] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAccessToken(session?.access_token ?? null);
-    });
-  }, [supabase]);
 
   if (!isOpen) return null;
 
@@ -78,20 +71,23 @@ export function AddDisplayModal({ isOpen, onClose }: AddDisplayModalProps) {
       return;
     }
 
-    if (!accessToken) {
-      setError(t('displays.add.notAuthenticated'));
-      return;
-    }
-
     setIsSubmitting(true);
     setError(null);
 
     try {
+      // Get fresh access token at submit time
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError(t('displays.add.notAuthenticated'));
+        setIsSubmitting(false);
+        return;
+      }
+
       const supabaseUrl = (supabase as any).supabaseUrl || import.meta.env.VITE_SUPABASE_URL;
 
       await claimDisplay(
         supabaseUrl,
-        accessToken,
+        session.access_token,
         fullCode,
         name.trim(),
         location.trim() || undefined
