@@ -8,6 +8,7 @@
   "nav": {
     "songs": "Songs",
     "events": "Events",
+    "displays": "Displays",
     "media": "Media",
     "settings": "Settings",
     "signOut": "Sign Out",
@@ -212,6 +213,76 @@
     },
     "backToEvents": "Back to Events"
   },
+  "displays": {
+    "title": "Displays",
+    "addDisplay": "Add Display",
+    "searchPlaceholder": "Search displays...",
+    "noDisplays": "No displays yet. Add a display to get started.",
+    "lastSeen": "Last seen",
+    "online": "Online",
+    "offline": "Offline",
+    "notFound": "Display not found",
+    "backToDisplays": "Back to Displays",
+    "add": {
+      "title": "Add Display",
+      "nameTitle": "Name Your Display",
+      "instructions": "Enter the 6-digit code shown on your display",
+      "name": "Display Name",
+      "namePlaceholder": "e.g., Main Sanctuary",
+      "nameRequired": "Display name is required",
+      "location": "Location",
+      "locationPlaceholder": "e.g., Building A",
+      "pairing": "Pairing...",
+      "complete": "Complete Setup",
+      "failed": "Failed to pair display",
+      "codeExpired": "Code expired or invalid. Please try again.",
+      "notAuthenticated": "You must be logged in to add a display"
+    },
+    "edit": {
+      "title": "Display Settings",
+      "basicInfo": "Basic Information",
+      "name": "Display Name",
+      "location": "Location",
+      "locationPlaceholder": "e.g., Main Hall",
+      "nameRequired": "Display name is required",
+      "saveFailed": "Failed to save display",
+      "remove": "Remove Display",
+      "removing": "Removing...",
+      "removeConfirm": "Are you sure you want to remove \"{{name}}\"? The display will need to be paired again.",
+      "removeFailed": "Failed to remove display",
+      "deviceInfo": "Device Information",
+      "platform": "Platform",
+      "resolution": "Resolution",
+      "appVersion": "App Version",
+      "displaySettings": "Display Settings",
+      "fontSize": "Font Size",
+      "fontSizes": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large",
+        "xlarge": "Extra Large"
+      },
+      "textPosition": "Text Position",
+      "positions": {
+        "center": "Center",
+        "bottom": "Bottom",
+        "lowerThird": "Lower Third"
+      },
+      "fontFamily": "Font Family",
+      "fonts": {
+        "system": "System Default",
+        "serif": "Serif",
+        "sansSerif": "Sans Serif"
+      },
+      "textShadow": "Text Shadow",
+      "overlayOpacity": "Background Overlay",
+      "connection": "Connection",
+      "testConnection": "Test Connection",
+      "testing": "Testing...",
+      "connectionSuccess": "Connected successfully",
+      "connectionFailed": "Connection failed"
+    }
+  },
   "media": {
     "title": "Media",
     "upload": "Upload Media",
@@ -331,6 +402,8 @@
     "success": "Success",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "next": "Next",
+    "back": "Back"
   }
 }

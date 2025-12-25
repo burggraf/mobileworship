@@ -10,6 +10,8 @@ import { SongsPage } from './pages/SongsPage';
 import { SongDetailPage } from './pages/SongDetailPage';
 import { EventsPage } from './pages/EventsPage';
 import { EventDetailPage } from './pages/EventDetailPage';
+import { DisplaysPage } from './pages/DisplaysPage';
+import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { MediaPage } from './pages/MediaPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ControlPage } from './pages/ControlPage';
@@ -49,6 +51,8 @@ export function App() {
                   <Route path="songs/:id" element={<SongDetailPage />} />
                   <Route path="events" element={<EventsPage />} />
                   <Route path="events/:id" element={<EventDetailPage />} />
+                  <Route path="displays" element={<DisplaysPage />} />
+                  <Route path="displays/:id" element={<DisplayDetailPage />} />
                   <Route path="media" element={<MediaPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                 </Route>

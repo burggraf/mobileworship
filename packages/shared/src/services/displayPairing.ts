@@ -1,5 +1,5 @@
 // packages/shared/src/services/displayPairing.ts
-import type { Display, DeviceInfo } from '../types/display';
+import type { DeviceInfo } from '../types/display';
 
 export interface ClaimDisplayResult {
   displayId: string;

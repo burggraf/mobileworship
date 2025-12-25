@@ -8,6 +8,7 @@
   "nav": {
     "songs": "Canciones",
     "events": "Eventos",
+    "displays": "Pantallas",
     "media": "Medios",
     "settings": "Configuración",
     "signOut": "Cerrar Sesión",
@@ -212,6 +213,76 @@
     },
     "backToEvents": "Volver a Eventos"
   },
+  "displays": {
+    "title": "Pantallas",
+    "addDisplay": "Agregar Pantalla",
+    "searchPlaceholder": "Buscar pantallas...",
+    "noDisplays": "Aún no hay pantallas. Agrega una pantalla para comenzar.",
+    "lastSeen": "Última vez",
+    "online": "En línea",
+    "offline": "Desconectado",
+    "notFound": "Pantalla no encontrada",
+    "backToDisplays": "Volver a Pantallas",
+    "add": {
+      "title": "Agregar Pantalla",
+      "nameTitle": "Nombra tu Pantalla",
+      "instructions": "Ingresa el código de 6 dígitos que aparece en tu pantalla",
+      "name": "Nombre de la Pantalla",
+      "namePlaceholder": "ej., Santuario Principal",
+      "nameRequired": "El nombre de la pantalla es requerido",
+      "location": "Ubicación",
+      "locationPlaceholder": "ej., Edificio A",
+      "pairing": "Vinculando...",
+      "complete": "Completar Configuración",
+      "failed": "Error al vincular la pantalla",
+      "codeExpired": "Código expirado o inválido. Por favor, inténtalo de nuevo.",
+      "notAuthenticated": "Debes iniciar sesión para agregar una pantalla"
+    },
+    "edit": {
+      "title": "Configuración de Pantalla",
+      "basicInfo": "Información Básica",
+      "name": "Nombre de la Pantalla",
+      "location": "Ubicación",
+      "locationPlaceholder": "ej., Salón Principal",
+      "nameRequired": "El nombre de la pantalla es requerido",
+      "saveFailed": "Error al guardar la pantalla",
+      "remove": "Eliminar Pantalla",
+      "removing": "Eliminando...",
+      "removeConfirm": "¿Estás seguro de que deseas eliminar \"{{name}}\"? La pantalla deberá vincularse de nuevo.",
+      "removeFailed": "Error al eliminar la pantalla",
+      "deviceInfo": "Información del Dispositivo",
+      "platform": "Plataforma",
+      "resolution": "Resolución",
+      "appVersion": "Versión de la App",
+      "displaySettings": "Configuración de Pantalla",
+      "fontSize": "Tamaño de Fuente",
+      "fontSizes": {
+        "small": "Pequeño",
+        "medium": "Mediano",
+        "large": "Grande",
+        "xlarge": "Extra Grande"
+      },
+      "textPosition": "Posición del Texto",
+      "positions": {
+        "center": "Centro",
+        "bottom": "Abajo",
+        "lowerThird": "Tercio Inferior"
+      },
+      "fontFamily": "Familia de Fuente",
+      "fonts": {
+        "system": "Sistema por Defecto",
+        "serif": "Serif",
+        "sansSerif": "Sans Serif"
+      },
+      "textShadow": "Sombra de Texto",
+      "overlayOpacity": "Superposición de Fondo",
+      "connection": "Conexión",
+      "testConnection": "Probar Conexión",
+      "testing": "Probando...",
+      "connectionSuccess": "Conectado exitosamente",
+      "connectionFailed": "Error de conexión"
+    }
+  },
   "media": {
     "title": "Medios",
     "upload": "Subir Medio",
@@ -331,6 +402,8 @@
     "success": "Éxito",
     "confirm": "Confirmar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "next": "Siguiente",
+    "back": "Volver"
   }
 }

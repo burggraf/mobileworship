@@ -62,7 +62,7 @@ export function useDisplays() {
         .not('paired_at', 'is', null)
         .order('name');
       if (error) throw error;
-      return (data as DisplayRow[]).map(mapRowToDisplay);
+      return (data as unknown as DisplayRow[]).map(mapRowToDisplay);
     },
     enabled: !!user?.churchId,
   });

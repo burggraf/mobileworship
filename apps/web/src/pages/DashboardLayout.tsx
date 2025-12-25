@@ -9,6 +9,7 @@ export function DashboardLayout() {
   const navItems = [
     { to: '/dashboard/songs', label: t('nav.songs') },
     { to: '/dashboard/events', label: t('nav.events') },
+    { to: '/dashboard/displays', label: t('nav.displays') },
     { to: '/dashboard/media', label: t('nav.media') },
     { to: '/dashboard/settings', label: t('nav.settings') },
   ];

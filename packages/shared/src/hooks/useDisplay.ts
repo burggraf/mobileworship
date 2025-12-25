@@ -28,7 +28,7 @@ function mapRowToDisplay(row: DisplayRow): Display {
     location: row.location,
     pairingCode: row.pairing_code,
     pairingCodeExpiresAt: row.pairing_code_expires_at,
-    pairedAt: row.pairedAt,
+    pairedAt: row.paired_at,
     lastSeenAt: row.last_seen_at,
     deviceInfo: row.device_info,
     defaultBackgroundId: row.default_background_id,
@@ -53,7 +53,7 @@ export function useDisplay(displayId: string | null) {
         .eq('id', displayId)
         .single();
       if (error) throw error;
-      return mapRowToDisplay(data as DisplayRow);
+      return mapRowToDisplay(data as unknown as DisplayRow);
     },
     enabled: !!displayId,
   });
@@ -64,7 +64,7 @@ export function useDisplay(displayId: string | null) {
       const newSettings = { ...displayQuery.data.settings, ...settings };
       const { error } = await supabase
         .from('displays')
-        .update({ settings: newSettings })
+        .update({ settings: JSON.parse(JSON.stringify(newSettings)) })
         .eq('id', displayId);
       if (error) throw error;
     },
