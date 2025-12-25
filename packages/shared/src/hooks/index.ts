@@ -9,3 +9,5 @@ export { useRealtime } from './useRealtime';
 export type { PresentationState } from './useRealtime';
 export { useDisplays, isDisplayOnline } from './useDisplays';
 export { useDisplay } from './useDisplay';
+export { useInvitations } from './useInvitations';
+export { useMemberships } from './useMemberships';
