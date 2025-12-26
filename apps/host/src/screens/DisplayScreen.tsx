@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useReducer } from 'react';
-import { View, Text, StyleSheet, Dimensions, BackHandler, DeviceEventEmitter } from 'react-native';
+import React, { useState, useEffect, useCallback, useReducer, useRef } from 'react';
+import { View, Text, StyleSheet, Dimensions, BackHandler, DeviceEventEmitter, AppState as RNAppState } from 'react-native';
 import type { ClientCommand, HostState, SlideContent } from '../types';
 import type { DisplaySettings } from '../types';
 import { DEFAULT_DISPLAY_SETTINGS } from '../types';
@@ -124,6 +124,8 @@ export function DisplayScreen() {
     init();
   }, []);
 
+  const appStateRef = useRef(RNAppState.currentState);
+
   useEffect(() => {
     if (appState.screen !== 'ready' && appState.screen !== 'display') return;
 
@@ -142,6 +144,33 @@ export function DisplayScreen() {
       setIsConnected(false);
     };
   }, [appState.screen === 'ready' || appState.screen === 'display' ? appState.displayId : null, handleRemoved]);
+
+  // Disconnect when app goes to background (home/back button), reconnect when foregrounded
+  useEffect(() => {
+    if (appState.screen !== 'ready' && appState.screen !== 'display') return;
+
+    const subscription = RNAppState.addEventListener('change', (nextAppState) => {
+      if (appStateRef.current === 'active' && nextAppState.match(/inactive|background/)) {
+        // App going to background - disconnect presence
+        realtimeService.disconnect();
+        setIsConnected(false);
+      } else if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
+        // App coming to foreground - reconnect
+        realtimeService.connect(
+          appState.displayId,
+          appState.churchId,
+          appState.name,
+          handleCommand,
+          undefined,
+          handleRemoved
+        );
+        setIsConnected(true);
+      }
+      appStateRef.current = nextAppState;
+    });
+
+    return () => subscription.remove();
+  }, [appState.screen === 'ready' || appState.screen === 'display' ? appState.displayId : null, handleCommand, handleRemoved]);
 
   useEffect(() => {
     if (isConnected) {
