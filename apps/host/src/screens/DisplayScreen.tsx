@@ -90,7 +90,10 @@ export function DisplayScreen() {
 
   const handleExit = useCallback(async () => {
     await realtimeService.disconnect();
-    BackHandler.exitApp();
+    // Small delay to ensure presence untrack message is sent before app exits
+    setTimeout(() => {
+      BackHandler.exitApp();
+    }, 100);
   }, []);
 
   const handleUnregister = useCallback(async () => {

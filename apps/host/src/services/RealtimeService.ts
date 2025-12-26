@@ -147,15 +147,33 @@ export class RealtimeService {
   }
 
   async disconnect(): Promise<void> {
-    // Presence is automatically cleaned up when channel is unsubscribed
-    // Supabase detects the disconnect and removes the presence state
+    // Mark as offline in database (instant offline signal)
+    if (this.displayId) {
+      try {
+        const supabase = this.getSupabase();
+        const offlineTime = new Date(Date.now() - 120000).toISOString();
+        await supabase
+          .from('displays')
+          .update({ last_seen_at: offlineTime })
+          .eq('id', this.displayId);
+      } catch (error) {
+        console.error('Failed to mark offline:', error);
+      }
+    }
+
+    // Clean up presence channel
     if (this.presenceChannel) {
-      await this.presenceChannel.unsubscribe();
+      try {
+        await this.presenceChannel.untrack();
+      } catch (e) {
+        // Ignore errors
+      }
+      this.presenceChannel.unsubscribe();
       this.presenceChannel = null;
     }
 
     if (this.commandChannel) {
-      await this.commandChannel.unsubscribe();
+      this.commandChannel.unsubscribe();
       this.commandChannel = null;
     }
 
