@@ -67,7 +67,7 @@ export function useDisplays() {
     enabled: !!user?.churchId,
   });
 
-  // Subscribe to realtime updates for last_seen_at
+  // Subscribe to realtime updates for displays (UPDATE, INSERT, DELETE)
   useEffect(() => {
     if (!user?.churchId) return;
 
@@ -80,6 +80,30 @@ export function useDisplays() {
           schema: 'public',
           table: 'displays',
           filter: `church_id=eq.${user.churchId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['displays', user.churchId] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'displays',
+          filter: `church_id=eq.${user.churchId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['displays', user.churchId] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'displays',
+          // Note: DELETE events cannot be filtered - must listen to all deletes
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['displays', user.churchId] });
