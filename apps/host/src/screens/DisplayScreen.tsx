@@ -88,7 +88,8 @@ export function DisplayScreen() {
     setShowMenu(false);
   }, []);
 
-  const handleExit = useCallback(() => {
+  const handleExit = useCallback(async () => {
+    await realtimeService.disconnect();
     BackHandler.exitApp();
   }, []);
 

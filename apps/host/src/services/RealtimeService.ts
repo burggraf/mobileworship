@@ -132,11 +132,27 @@ export class RealtimeService {
     }, 30000);
   }
 
-  disconnect(): void {
+  async disconnect(): Promise<void> {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     }
+
+    // Mark as offline immediately by setting last_seen_at to old timestamp
+    if (this.displayId) {
+      try {
+        const supabase = this.getSupabase();
+        // Set to 2 minutes ago so isDisplayOnline returns false immediately
+        const offlineTime = new Date(Date.now() - 120000).toISOString();
+        await supabase
+          .from('displays')
+          .update({ last_seen_at: offlineTime })
+          .eq('id', this.displayId);
+      } catch (error) {
+        console.error('Failed to mark offline:', error);
+      }
+    }
+
     if (this.channel) {
       this.channel.unsubscribe();
       this.channel = null;

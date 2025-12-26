@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDisplays, isDisplayOnline, useAuth } from '@mobileworship/shared';
@@ -27,6 +27,15 @@ export function DisplaysPage() {
   const { can } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [, setTick] = useState(0);
+
+  // Re-evaluate online status every 15 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(t => t + 1);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (isLoading) {
     return <div className="text-gray-500">{t('common.loading')}</div>;

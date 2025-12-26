@@ -17,6 +17,15 @@ export function DisplayDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<boolean | null>(null);
+  const [, setTick] = useState(0);
+
+  // Re-evaluate online status every 15 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(t => t + 1);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Settings state
   const [fontSize, setFontSize] = useState<DisplaySettings['fontSize']>('medium');
