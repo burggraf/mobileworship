@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useReducer } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, BackHandler, DeviceEventEmitter } from 'react-native';
 import type { ClientCommand, HostState, SlideContent } from '../types';
 import type { DisplaySettings } from '../types';
 import { DEFAULT_DISPLAY_SETTINGS } from '../types';
 import { SlideRenderer } from '../components/SlideRenderer';
+import { MenuModal } from '../components/MenuModal';
 import { pairingService } from '../services/PairingService';
 import { realtimeService } from '../services/RealtimeService';
 import { PairingScreen } from './PairingScreen';
@@ -64,6 +65,42 @@ export function DisplayScreen() {
   });
   const [currentSlide, setCurrentSlide] = useState<SlideContent | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  // Listen for native key events to open menu
+  useEffect(() => {
+    // Only listen when menu is not showing (MenuModal handles its own key events)
+    if (showMenu) return;
+    // Only listen when we're in a state that should show the menu
+    if (appState.screen !== 'ready' && appState.screen !== 'display') return;
+
+    const subscription = DeviceEventEmitter.addListener('onKeyDown', (eventName: string) => {
+      console.log('DisplayScreen received key:', eventName, 'showMenu:', showMenu);
+      if (eventName === 'select' && !showMenu) {
+        setShowMenu(true);
+      }
+    });
+
+    return () => subscription.remove();
+  }, [showMenu, appState.screen]);
+
+  const handleMenuClose = useCallback(() => {
+    setShowMenu(false);
+  }, []);
+
+  const handleExit = useCallback(() => {
+    BackHandler.exitApp();
+  }, []);
+
+  const handleUnregister = useCallback(async () => {
+    if (appState.screen === 'ready' || appState.screen === 'display') {
+      const success = await pairingService.unregister(appState.displayId);
+      if (success) {
+        setShowMenu(false);
+        dispatch({ type: 'REMOVED' });
+      }
+    }
+  }, [appState]);
 
   useEffect(() => {
     async function init() {
@@ -164,15 +201,45 @@ export function DisplayScreen() {
   }
 
   if (appState.screen === 'ready') {
-    return <ReadyScreen displayName={appState.name} isConnected={isConnected} settings={appState.settings} />;
+    return (
+      <View style={styles.container}>
+        <ReadyScreen displayName={appState.name} isConnected={isConnected} settings={appState.settings} />
+        <MenuModal
+          visible={showMenu}
+          onClose={handleMenuClose}
+          onExit={handleExit}
+          onUnregister={handleUnregister}
+        />
+      </View>
+    );
   }
 
   if (hostState.isBlank) {
-    return <View style={styles.container} />;
+    return (
+      <View style={styles.container}>
+        <View style={styles.container} />
+        <MenuModal
+          visible={showMenu}
+          onClose={handleMenuClose}
+          onExit={handleExit}
+          onUnregister={handleUnregister}
+        />
+      </View>
+    );
   }
 
   if (hostState.isLogo) {
-    return <View style={[styles.container, styles.centered]}><Text style={styles.logo}>Mobile Worship</Text></View>;
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text style={styles.logo}>Mobile Worship</Text>
+        <MenuModal
+          visible={showMenu}
+          onClose={handleMenuClose}
+          onExit={handleExit}
+          onUnregister={handleUnregister}
+        />
+      </View>
+    );
   }
 
   return (
@@ -182,6 +249,12 @@ export function DisplayScreen() {
       ) : (
         <View style={[styles.container, styles.centered]}><Text style={styles.subtitle}>No slide selected</Text></View>
       )}
+      <MenuModal
+        visible={showMenu}
+        onClose={handleMenuClose}
+        onExit={handleExit}
+        onUnregister={handleUnregister}
+      />
     </View>
   );
 }

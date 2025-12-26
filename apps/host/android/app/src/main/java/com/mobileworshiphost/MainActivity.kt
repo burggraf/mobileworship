@@ -1,5 +1,6 @@
 package com.mobileworshiphost
 
+import android.view.KeyEvent
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -19,4 +20,13 @@ class MainActivity : ReactActivity() {
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+  override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    KeyEventModule.instance?.sendKeyEvent(keyCode, KeyEvent.ACTION_DOWN)
+    // Don't consume BACK key - let React Native handle it
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      return super.onKeyDown(keyCode, event)
+    }
+    return true
+  }
 }

@@ -37,7 +37,12 @@ interface RegenerateRequest {
   };
 }
 
-type RequestBody = GenerateRequest | ClaimRequest | VerifyRequest | RegenerateRequest;
+interface UnregisterRequest {
+  action: 'unregister';
+  displayId: string;
+}
+
+type RequestBody = GenerateRequest | ClaimRequest | VerifyRequest | RegenerateRequest | UnregisterRequest;
 
 function generatePairingCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -237,6 +242,28 @@ serve(async (req) => {
           churchId: data.church_id,
           settings: data.settings,
         }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (body.action === 'unregister') {
+      // Unregister (delete) a display from the system
+      // This allows the display to be re-paired to a different church
+      const { error } = await supabase
+        .from('displays')
+        .delete()
+        .eq('id', body.displayId);
+
+      if (error) {
+        console.error('Error deleting display:', error);
+        return new Response(
+          JSON.stringify({ error: 'Failed to unregister display' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

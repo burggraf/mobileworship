@@ -137,6 +137,32 @@ export class PairingService {
     this.displayId = null;
   }
 
+  async unregister(displayId: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${Config.SUPABASE_FUNCTIONS_URL}/display-pairing`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Config.SUPABASE_ANON_KEY}`,
+          'apikey': Config.SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ action: 'unregister', displayId }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to unregister display');
+        return false;
+      }
+
+      // Clear local storage after successful unregister
+      await this.clearPairing();
+      return true;
+    } catch (error) {
+      console.error('Error unregistering display:', error);
+      return false;
+    }
+  }
+
   getDisplayId(): string | null {
     return this.displayId;
   }
