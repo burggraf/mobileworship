@@ -359,7 +359,16 @@
     "unknownSong": "Unknown Song",
     "eventNotFound": "Event not found",
     "backToDashboard": "Back to Dashboard",
-    "back": "Back"
+    "back": "Back",
+    "noDisplays": "No displays",
+    "allConnected": "{{count}} connected",
+    "someConnected": "{{connected}}/{{total}} connected",
+    "disconnected": "Disconnected",
+    "displayStatus": "Display Status",
+    "noDisplaysConfigured": "No displays configured for this church",
+    "statusConnected": "Connected",
+    "statusConnecting": "Connecting...",
+    "statusDisconnected": "Offline"
   },
   "presentation": {
     "loading": "Loading presentation...",

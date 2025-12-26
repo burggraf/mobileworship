@@ -3,6 +3,7 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useEvents, useSongs, useRealtime, parseSongMarkdown, useDisplays, useMedia } from '@mobileworship/shared';
 import type { EventItem, ParsedSong } from '@mobileworship/shared';
+import { ConnectionStatusDropdown } from '../components/ConnectionStatusDropdown';
 
 export function ControlPage() {
   const { t } = useTranslation();
@@ -10,7 +11,7 @@ export function ControlPage() {
   const { user, isLoading, can } = useAuth();
   const { events } = useEvents();
   const { songs } = useSongs();
-  const { displays } = useDisplays();
+  const { displays, checkDisplayOnline } = useDisplays();
   const { media, getPublicUrl } = useMedia();
 
   // Get current event
@@ -37,9 +38,15 @@ export function ControlPage() {
     return map;
   }, [songs]);
 
-  // Get display IDs to send commands to
+  // Get display IDs and names to send commands to
   const displayIds = useMemo(() => {
     return displays.map(d => d.id);
+  }, [displays]);
+
+  const displayNames = useMemo(() => {
+    const map = new Map<string, string>();
+    displays.forEach(d => map.set(d.id, d.name));
+    return map;
   }, [displays]);
 
   // Helper to get background URL for a song
@@ -66,8 +73,18 @@ export function ControlPage() {
     items,
     songs: songsMap,
     displayIds,
+    displayNames,
     getBackgroundUrl,
   });
+
+  // Build display statuses using the proper online check from useDisplays
+  const displayStatuses = useMemo(() => {
+    return displays.map(d => ({
+      displayId: d.id,
+      displayName: d.name,
+      status: checkDisplayOnline(d.id, d.lastSeenAt) ? 'connected' as const : 'disconnected' as const,
+    }));
+  }, [displays, checkDisplayOnline]);
 
   // Get current and next sections
   const currentItem = getCurrentItem();
@@ -125,10 +142,7 @@ export function ControlPage() {
           </Link>
           <h1 className="font-bold text-lg">{event.title}</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <span className="text-sm text-gray-600 dark:text-gray-400">{t('control.connected')}</span>
-        </div>
+        <ConnectionStatusDropdown statuses={displayStatuses} />
       </header>
 
       <div className="flex-1 flex overflow-hidden">

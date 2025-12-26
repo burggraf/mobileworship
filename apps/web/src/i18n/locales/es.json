@@ -359,7 +359,16 @@
     "unknownSong": "Canción Desconocida",
     "eventNotFound": "Evento no encontrado",
     "backToDashboard": "Volver al Panel",
-    "back": "Volver"
+    "back": "Volver",
+    "noDisplays": "Sin pantallas",
+    "allConnected": "{{count}} conectadas",
+    "someConnected": "{{connected}}/{{total}} conectadas",
+    "disconnected": "Desconectado",
+    "displayStatus": "Estado de Pantallas",
+    "noDisplaysConfigured": "No hay pantallas configuradas para esta iglesia",
+    "statusConnected": "Conectado",
+    "statusConnecting": "Conectando...",
+    "statusDisconnected": "Sin conexión"
   },
   "presentation": {
     "loading": "Cargando presentación...",

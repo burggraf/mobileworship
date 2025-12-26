@@ -16,15 +16,22 @@ interface SlideContent {
   backgroundUrl?: string;
 }
 
+export interface DisplayConnectionStatus {
+  displayId: string;
+  displayName: string;
+  status: 'connected' | 'connecting' | 'disconnected';
+}
+
 interface UseRealtimeOptions {
   eventId: string;
   items: EventItem[];
   songs: Map<string, ParsedSong>;
   displayIds?: string[];
+  displayNames?: Map<string, string>;
   getBackgroundUrl?: (songId: string) => string | undefined;
 }
 
-export function useRealtime({ eventId, items, songs, displayIds = [], getBackgroundUrl }: UseRealtimeOptions) {
+export function useRealtime({ eventId, items, songs, displayIds = [], displayNames = new Map(), getBackgroundUrl }: UseRealtimeOptions) {
   const supabase = useSupabase();
   const channelRef = useRef<RealtimeChannel | null>(null);
   const displayChannelsRef = useRef<RealtimeChannel[]>([]);
@@ -35,6 +42,8 @@ export function useRealtime({ eventId, items, songs, displayIds = [], getBackgro
     currentSectionIndex: 0,
     isBlank: false,
   });
+
+  const [displayStatuses, setDisplayStatuses] = useState<DisplayConnectionStatus[]>([]);
 
   // Helper to get slide content for current state
   const getSlideContent = useCallback((itemIndex: number, sectionIndex: number): SlideContent | null => {
@@ -251,47 +260,60 @@ export function useRealtime({ eventId, items, songs, displayIds = [], getBackgro
 
   // Set up display channels - only recreate when displayIds change
   useEffect(() => {
-    if (displayIds.length === 0) return;
+    if (displayIds.length === 0) {
+      setDisplayStatuses([]);
+      return;
+    }
+
+    // Initialize all displays as connecting
+    setDisplayStatuses(displayIds.map(displayId => ({
+      displayId,
+      displayName: displayNames.get(displayId) || 'Display',
+      status: 'connecting' as const,
+    })));
 
     const channels = displayIds.map(displayId => {
       const channel = supabase.channel(`display:${displayId}`);
       return channel;
     });
 
-    // Subscribe all channels and wait for them to be ready
-    Promise.all(channels.map(channel =>
-      new Promise<void>((resolve) => {
-        channel.subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            resolve();
-          }
-        });
-      })
-    )).then(() => {
-      displayChannelsRef.current = channels;
+    // Subscribe all channels and track their status
+    channels.forEach((channel, index) => {
+      const displayId = displayIds[index];
+      channel.subscribe((status) => {
+        setDisplayStatuses(prev => prev.map(d =>
+          d.displayId === displayId
+            ? { ...d, status: status === 'SUBSCRIBED' ? 'connected' : status === 'CLOSED' || status === 'CHANNEL_ERROR' ? 'disconnected' : 'connecting' }
+            : d
+        ));
 
-      // Send initial slide after all channels are subscribed
-      const slide = getSlideContent(state.currentItemIndex, state.currentSectionIndex);
-      if (slide) {
-        channels.forEach(channel => {
-          channel.send({
-            type: 'broadcast',
-            event: 'command',
-            payload: { type: 'SET_SLIDE', slide },
-          });
-        });
-      }
+        if (status === 'SUBSCRIBED') {
+          // Send initial slide when this channel connects
+          const slide = getSlideContent(state.currentItemIndex, state.currentSectionIndex);
+          if (slide) {
+            channel.send({
+              type: 'broadcast',
+              event: 'command',
+              payload: { type: 'SET_SLIDE', slide },
+            });
+          }
+        }
+      });
     });
+
+    displayChannelsRef.current = channels;
 
     return () => {
       channels.forEach(channel => channel.unsubscribe());
       displayChannelsRef.current = [];
+      setDisplayStatuses([]);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supabase, displayIds.join(',')]); // Only recreate when displayIds actually change
+  }, [supabase, displayIds.join(','), displayNames]); // Only recreate when displayIds actually change
 
   return {
     state,
+    displayStatuses,
     goNext,
     goPrev,
     goToItem,
