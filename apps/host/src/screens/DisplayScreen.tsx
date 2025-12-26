@@ -21,6 +21,7 @@ type Action =
   | { type: 'INIT_UNPAIRED'; existingDisplayId?: string }
   | { type: 'INIT_PAIRED'; displayId: string; name: string; churchId: string; settings: DisplaySettings }
   | { type: 'PAIRED'; displayId: string; name: string; churchId: string }
+  | { type: 'REMOVED' }
   | { type: 'EVENT_LOADED' }
   | { type: 'EVENT_UNLOADED' };
 
@@ -32,6 +33,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { screen: 'ready', displayId: action.displayId, name: action.name, churchId: action.churchId, settings: action.settings };
     case 'PAIRED':
       return { screen: 'ready', displayId: action.displayId, name: action.name, churchId: action.churchId, settings: DEFAULT_DISPLAY_SETTINGS };
+    case 'REMOVED':
+      return { screen: 'pairing' };
     case 'EVENT_LOADED':
       if (state.screen === 'ready') return { ...state, screen: 'display' };
       return state;
@@ -86,14 +89,14 @@ export function DisplayScreen() {
   useEffect(() => {
     if (appState.screen !== 'ready' && appState.screen !== 'display') return;
 
-    realtimeService.connect(appState.displayId, handleCommand);
+    realtimeService.connect(appState.displayId, handleCommand, undefined, handleRemoved);
     setIsConnected(true);
 
     return () => {
       realtimeService.disconnect();
       setIsConnected(false);
     };
-  }, [appState.screen === 'ready' || appState.screen === 'display' ? appState.displayId : null]);
+  }, [appState.screen === 'ready' || appState.screen === 'display' ? appState.displayId : null, handleRemoved]);
 
   useEffect(() => {
     if (isConnected) {
@@ -144,6 +147,12 @@ export function DisplayScreen() {
 
   const handlePaired = useCallback((displayId: string, name: string, churchId: string) => {
     dispatch({ type: 'PAIRED', displayId, name, churchId });
+  }, []);
+
+  const handleRemoved = useCallback(async () => {
+    console.log('Display removed from church');
+    await pairingService.clearPairing();
+    dispatch({ type: 'REMOVED' });
   }, []);
 
   if (appState.screen === 'loading') {

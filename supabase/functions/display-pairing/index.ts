@@ -111,16 +111,17 @@ serve(async (req) => {
         );
       }
 
-      const { data: userData, error: userError } = await userClient
-        .from('users')
+      // Get user's church membership
+      const { data: membershipData, error: membershipError } = await userClient
+        .from('church_memberships')
         .select('church_id')
-        .eq('id', authUser.id)
+        .eq('user_id', authUser.id)
         .single();
 
-      console.log('User data:', userData, 'Error:', userError?.message);
-      if (userError || !userData) {
+      console.log('Membership data:', membershipData, 'Error:', membershipError?.message);
+      if (membershipError || !membershipData) {
         return new Response(
-          JSON.stringify({ error: `User not found: ${userError?.message || 'no data'}` }),
+          JSON.stringify({ error: `No church membership found: ${membershipError?.message || 'no data'}` }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -145,7 +146,7 @@ serve(async (req) => {
       const { data: claimed, error: claimError } = await supabase
         .from('displays')
         .update({
-          church_id: userData.church_id,
+          church_id: membershipData.church_id,
           name: body.name,
           location: body.location || null,
           pairing_code: null,

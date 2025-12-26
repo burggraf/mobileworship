@@ -5,6 +5,7 @@ import { Config } from '../config';
 
 type CommandHandler = (command: ClientCommand) => void;
 type ClaimHandler = (name: string, churchId: string) => void;
+type RemovedHandler = () => void;
 
 export class RealtimeService {
   private supabase: SupabaseClient | null = null;
@@ -25,7 +26,8 @@ export class RealtimeService {
   async connect(
     displayId: string,
     onCommand: CommandHandler,
-    onClaim?: ClaimHandler
+    onClaim?: ClaimHandler,
+    onRemoved?: RemovedHandler
   ): Promise<void> {
     this.displayId = displayId;
 
@@ -59,6 +61,25 @@ export class RealtimeService {
           const oldRow = payload.old as { paired_at?: string };
           if (newRow.paired_at && !oldRow.paired_at) {
             onClaim(newRow.name || 'Display', newRow.church_id || '');
+          }
+        }
+      );
+    }
+
+    if (onRemoved) {
+      // Note: DELETE events cannot be filtered in Supabase Realtime
+      // We must listen to all deletes and check the ID in the callback
+      this.channel.on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'displays',
+        },
+        (payload) => {
+          const oldRow = payload.old as { id?: string };
+          if (oldRow.id === displayId) {
+            onRemoved();
           }
         }
       );
