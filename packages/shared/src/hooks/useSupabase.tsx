@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useRef, type ReactNode } from 'react';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../types/database';
 
@@ -7,6 +7,21 @@ type SupabaseContextType = {
 };
 
 const SupabaseContext = createContext<SupabaseContextType | null>(null);
+
+// Singleton client cache to prevent multiple instances
+let cachedClient: SupabaseClient<Database> | null = null;
+let cachedUrl: string | null = null;
+let cachedKey: string | null = null;
+
+function getOrCreateClient(url: string, key: string): SupabaseClient<Database> {
+  if (cachedClient && cachedUrl === url && cachedKey === key) {
+    return cachedClient;
+  }
+  cachedClient = createClient<Database>(url, key);
+  cachedUrl = url;
+  cachedKey = key;
+  return cachedClient;
+}
 
 interface SupabaseProviderProps {
   children: ReactNode;
@@ -19,12 +34,13 @@ export function SupabaseProvider({
   supabaseUrl,
   supabaseAnonKey,
 }: SupabaseProviderProps) {
-  const supabase = useMemo(
-    () => createClient<Database>(supabaseUrl, supabaseAnonKey),
-    [supabaseUrl, supabaseAnonKey]
-  );
+  const clientRef = useRef<SupabaseClient<Database> | null>(null);
 
-  return <SupabaseContext.Provider value={{ supabase }}>{children}</SupabaseContext.Provider>;
+  if (!clientRef.current) {
+    clientRef.current = getOrCreateClient(supabaseUrl, supabaseAnonKey);
+  }
+
+  return <SupabaseContext.Provider value={{ supabase: clientRef.current }}>{children}</SupabaseContext.Provider>;
 }
 
 export function useSupabase() {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEvents, useAuth } from '@mobileworship/shared';
 import { CreateEventModal } from '../components/CreateEventModal';
@@ -8,6 +8,7 @@ export function EventsPage() {
   const { t } = useTranslation();
   const { events, isLoading } = useEvents();
   const { can } = useAuth();
+  const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
 
   if (isLoading) {
@@ -66,13 +67,15 @@ export function EventsPage() {
                     {t(`events.status.${event.status || 'draft'}`)}
                   </span>
                   {can('control:operate') && event.status !== 'completed' && (
-                    <Link
-                      to={`/control/${event.id}`}
-                      onClick={(e) => e.stopPropagation()}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(`/control/${event.id}`);
+                      }}
                       className="px-4 py-2 bg-primary-600 text-white text-sm rounded hover:bg-primary-700 transition"
                     >
                       {t('events.control')}
-                    </Link>
+                    </button>
                   )}
                 </div>
               </div>

@@ -39,7 +39,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <SupabaseProvider supabaseUrl={supabaseUrl} supabaseAnonKey={supabaseAnonKey}>
         <AuthProvider>
-          <BrowserRouter>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<HomePage />} />
