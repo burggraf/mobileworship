@@ -48,6 +48,21 @@ export interface AuthMessage {
   token: string;
 }
 
+// Local WebSocket authentication (for direct connections)
+export interface LocalAuthMessage {
+  type: 'LOCAL_AUTH';
+  token: string;      // Supabase JWT
+  displayId: string;  // Which display client wants to control
+}
+
+export type LocalAuthError = 'INVALID_TOKEN' | 'WRONG_CHURCH' | 'DISPLAY_MISMATCH';
+
+export interface LocalAuthResponse {
+  type: 'LOCAL_AUTH_RESULT';
+  success: boolean;
+  error?: LocalAuthError;
+}
+
 // State sync message
 export interface StateSyncMessage {
   type: 'STATE_SYNC';
@@ -74,6 +89,8 @@ export interface ConnectionInfo {
 // Message wrapper for transport
 export type ProtocolMessage =
   | AuthMessage
+  | LocalAuthMessage
+  | LocalAuthResponse
   | StateSyncMessage
   | StatusMessage
   | { type: 'COMMAND'; command: ClientCommand }
