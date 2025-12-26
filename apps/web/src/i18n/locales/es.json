@@ -68,7 +68,9 @@
       "passwordMismatch": "Las contraseñas no coinciden",
       "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
       "error": "Error al actualizar la contraseña"
-    }
+    },
+    "invitationSignup": "Crea una cuenta para aceptar tu invitación.",
+    "emailLockedForInvitation": "Este correo está definido por tu invitación y no se puede cambiar."
   },
   "home": {
     "hero": {

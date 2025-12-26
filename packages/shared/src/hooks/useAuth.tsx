@@ -70,12 +70,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   async function fetchUserProfile(authUser: User) {
-    // Get user profile
+    // Get user profile - use maybeSingle() since new invited users may not have a profile yet
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('*')
       .eq('id', authUser.id)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       setUser(null);

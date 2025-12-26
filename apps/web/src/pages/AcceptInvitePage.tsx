@@ -37,8 +37,20 @@ export function AcceptInvitePage() {
       const { data: { user: sessionUser } } = await supabase.auth.getUser();
 
       if (!sessionUser) {
-        // Not authenticated at all - redirect to login
-        navigate(`/login?redirect=/accept-invite?token=${token}`);
+        // Not authenticated - check if invited user already has an account
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: userExists } = await (supabase.rpc as any)('check_invitation_user_exists', {
+          p_token: token
+        });
+
+        const redirectParam = encodeURIComponent(`/accept-invite?token=${token}`);
+        if (userExists) {
+          // User has account - go to login
+          navigate(`/login?redirect=${redirectParam}`);
+        } else {
+          // New user - go directly to signup
+          navigate(`/signup?redirect=${redirectParam}`);
+        }
         return;
       }
 
@@ -80,7 +92,7 @@ export function AcceptInvitePage() {
           .from('users')
           .select('id')
           .eq('id', sessionUser.id)
-          .single();
+          .maybeSingle();
 
         if (!existingUser) {
           setNeedsProfile(true);

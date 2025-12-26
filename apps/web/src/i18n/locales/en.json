@@ -68,7 +68,9 @@
       "passwordMismatch": "Passwords do not match",
       "passwordTooShort": "Password must be at least 6 characters",
       "error": "Failed to update password"
-    }
+    },
+    "invitationSignup": "Create an account to accept your invitation.",
+    "emailLockedForInvitation": "This email is set by your invitation and cannot be changed."
   },
   "home": {
     "hero": {

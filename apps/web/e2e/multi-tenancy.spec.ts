@@ -318,9 +318,18 @@ test.describe('Multi-tenancy E2E Tests', () => {
       // Church name field should NOT be visible for invitation signups
       await expect(page.locator('#churchName')).not.toBeVisible();
 
-      // Fill only required fields
+      // Email field should be pre-filled from invitation token and locked (readonly)
+      const emailInput = page.locator('#email');
+      await expect(emailInput).toHaveValue(memberAccount.address, { timeout: 10000 });
+      console.log('Email field is pre-filled with invitation email');
+
+      // Verify email field is readonly (locked)
+      const isReadonly = await emailInput.getAttribute('readonly');
+      expect(isReadonly).not.toBeNull();
+      console.log('Email field is locked (readonly)');
+
+      // Fill only required fields (email already filled)
       await page.fill('#name', 'Invited Member');
-      await page.fill('#email', memberAccount.address);
       await page.fill('#password', 'MemberPassword123!');
 
       // Submit

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@mobileworship/shared';
+import { useAuth, useSupabase } from '@mobileworship/shared';
 
 export function SignupPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const supabase = useSupabase();
   const redirectUrl = searchParams.get('redirect');
 
   // Check if this is an invitation signup (redirect to accept-invite)
@@ -14,7 +15,39 @@ export function SignupPage() {
   const [name, setName] = useState('');
   const [churchName, setChurchName] = useState('');
   const [email, setEmail] = useState('');
+  const [invitationEmail, setInvitationEmail] = useState<string | null>(null);
   const [password, setPassword] = useState('');
+
+  // Fetch invitation details to pre-fill email for invitation signups
+  useEffect(() => {
+    async function fetchInvitation() {
+      if (!isInvitationSignup || !redirectUrl) return;
+
+      // Extract token from redirect URL (e.g., /accept-invite?token=xxx)
+      const tokenMatch = redirectUrl.match(/token=([^&]+)/);
+      if (!tokenMatch) return;
+
+      const token = tokenMatch[1];
+
+      try {
+        // Only fetch email - church name requires auth due to RLS
+        const { data } = await supabase
+          .from('invitations')
+          .select('email')
+          .eq('token', token)
+          .single();
+
+        if (data?.email) {
+          setInvitationEmail(data.email);
+          setEmail(data.email);
+        }
+      } catch (err) {
+        console.error('Failed to fetch invitation:', err);
+      }
+    }
+
+    fetchInvitation();
+  }, [isInvitationSignup, redirectUrl, supabase]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [signupComplete, setSignupComplete] = useState(false);
@@ -134,10 +167,18 @@ export function SignupPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => !invitationEmail && setEmail(e.target.value)}
+              readOnly={!!invitationEmail}
               required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-700"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-700 ${
+                invitationEmail ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : ''
+              }`}
             />
+            {invitationEmail && (
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {t('auth.emailLockedForInvitation', 'This email is set by your invitation and cannot be changed.')}
+              </p>
+            )}
           </div>
 
           <div>
