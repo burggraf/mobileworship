@@ -4,19 +4,20 @@ import type { DisplaySettings } from '@mobileworship/shared';
 export type TransitionType = 'cut' | 'fade' | 'slide';
 
 // Client → Host commands
+// All commands include commandId for deduplication across local/remote channels
 export type ClientCommand =
-  | { type: 'LOAD_EVENT'; eventId: string }
-  | { type: 'UNLOAD_EVENT' }
-  | { type: 'GOTO_SLIDE'; slideIndex: number }
-  | { type: 'GOTO_SECTION'; sectionIndex: number }
-  | { type: 'GOTO_ITEM'; itemIndex: number }
-  | { type: 'NEXT_SLIDE' }
-  | { type: 'PREV_SLIDE' }
-  | { type: 'BLANK_SCREEN' }
-  | { type: 'SHOW_LOGO' }
-  | { type: 'UNBLANK' }
-  | { type: 'SET_TRANSITION'; transition: TransitionType }
-  | { type: 'UPDATE_SETTINGS'; settings: Partial<DisplaySettings> };
+  | { type: 'LOAD_EVENT'; eventId: string; commandId: string }
+  | { type: 'UNLOAD_EVENT'; commandId: string }
+  | { type: 'GOTO_SLIDE'; slideIndex: number; commandId: string }
+  | { type: 'GOTO_SECTION'; sectionIndex: number; commandId: string }
+  | { type: 'GOTO_ITEM'; itemIndex: number; commandId: string }
+  | { type: 'NEXT_SLIDE'; commandId: string }
+  | { type: 'PREV_SLIDE'; commandId: string }
+  | { type: 'BLANK_SCREEN'; commandId: string }
+  | { type: 'SHOW_LOGO'; commandId: string }
+  | { type: 'UNBLANK'; commandId: string }
+  | { type: 'SET_TRANSITION'; transition: TransitionType; commandId: string }
+  | { type: 'UPDATE_SETTINGS'; settings: Partial<DisplaySettings>; commandId: string };
 
 // Host → Client state updates
 export interface HostState {
@@ -97,4 +98,16 @@ export interface DisplayPresence {
   displayId: string;
   name: string;
   online_at: string;
+}
+
+// Helper to generate a unique command ID
+export function generateCommandId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// Helper to create a command with auto-generated ID
+export function createCommand<T extends Omit<ClientCommand, 'commandId'>>(
+  command: T
+): T & { commandId: string } {
+  return { ...command, commandId: generateCommandId() };
 }
