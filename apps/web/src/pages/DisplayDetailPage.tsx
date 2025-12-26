@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useDisplay, useAuth, isDisplayOnline } from '@mobileworship/shared';
+import { useDisplay, useDisplays, useAuth } from '@mobileworship/shared';
 import type { DisplaySettings } from '@mobileworship/shared';
 
 export function DisplayDetailPage() {
@@ -9,6 +9,7 @@ export function DisplayDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { display, isLoading, updateSettings, updateName, remove, testConnection } = useDisplay(id ?? null);
+  const { checkDisplayOnline } = useDisplays();
   const { can } = useAuth();
 
   const [name, setName] = useState('');
@@ -17,15 +18,6 @@ export function DisplayDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<boolean | null>(null);
-  const [, setTick] = useState(0);
-
-  // Re-evaluate online status every 15 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTick(t => t + 1);
-    }, 15000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Settings state
   const [fontSize, setFontSize] = useState<DisplaySettings['fontSize']>('medium');
@@ -80,7 +72,7 @@ export function DisplayDetailPage() {
     );
   }
 
-  const online = isDisplayOnline(display.lastSeenAt);
+  const online = checkDisplayOnline(display.id, display.lastSeenAt);
   const canEdit = can('church:manage');
   const isSaving = updateName.isPending || updateSettings.isPending;
   const isDeleting = remove.isPending;

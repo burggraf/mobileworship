@@ -1,6 +1,6 @@
 // packages/shared/src/hooks/useDisplays.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSupabase } from './useSupabase';
 import { useAuth } from './useAuth';
 import type { Display, DisplaySettings } from '../types/display';
@@ -39,6 +39,22 @@ function mapRowToDisplay(row: DisplayRow): Display {
   };
 }
 
+// Helper to get presence channel name (must match host app)
+const getPresenceChannel = (churchId: string) => `church:${churchId}:presence`;
+
+// Presence payload tracked by host app
+interface DisplayPresencePayload {
+  displayId: string;
+  name: string;
+  online_at: string;
+}
+
+// Supabase presence includes presence_ref plus the tracked data
+interface PresenceState extends DisplayPresencePayload {
+  presence_ref: string;
+}
+
+// Legacy fallback for when presence isn't available
 export function isDisplayOnline(lastSeenAt: string | null): boolean {
   if (!lastSeenAt) return false;
   const lastSeen = new Date(lastSeenAt).getTime();
@@ -50,6 +66,7 @@ export function useDisplays() {
   const supabase = useSupabase();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [onlineDisplayIds, setOnlineDisplayIds] = useState<Set<string>>(new Set());
 
   const displaysQuery = useQuery({
     queryKey: ['displays', user?.churchId],
@@ -67,12 +84,63 @@ export function useDisplays() {
     enabled: !!user?.churchId,
   });
 
-  // Subscribe to realtime updates for displays (UPDATE, INSERT, DELETE)
+  // Subscribe to presence channel for instant online/offline status
+  useEffect(() => {
+    if (!user?.churchId) return;
+
+    const presenceChannel = supabase.channel(getPresenceChannel(user.churchId));
+
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const onlineIds = new Set<string>();
+
+        // Presence state is keyed by a unique ID, values are arrays of presence objects
+        Object.values(state).forEach((presences) => {
+          (presences as unknown as PresenceState[]).forEach((presence) => {
+            if (presence.displayId) {
+              onlineIds.add(presence.displayId);
+            }
+          });
+        });
+
+        setOnlineDisplayIds(onlineIds);
+      })
+      .on('presence', { event: 'join' }, ({ newPresences }) => {
+        setOnlineDisplayIds((prev) => {
+          const next = new Set(prev);
+          (newPresences as unknown as PresenceState[]).forEach((presence) => {
+            if (presence.displayId) {
+              next.add(presence.displayId);
+            }
+          });
+          return next;
+        });
+      })
+      .on('presence', { event: 'leave' }, ({ leftPresences }) => {
+        setOnlineDisplayIds((prev) => {
+          const next = new Set(prev);
+          (leftPresences as unknown as PresenceState[]).forEach((presence) => {
+            if (presence.displayId) {
+              next.delete(presence.displayId);
+            }
+          });
+          return next;
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [supabase, user?.churchId]);
+
+  // Subscribe to database changes for display list updates (INSERT, UPDATE, DELETE)
   useEffect(() => {
     if (!user?.churchId) return;
 
     const channel = supabase
-      .channel('displays-status')
+      .channel('displays-changes')
       .on(
         'postgres_changes',
         {
@@ -151,11 +219,23 @@ export function useDisplays() {
     },
   });
 
+  // Check if a display is online using presence (instant) with fallback to lastSeenAt
+  const checkDisplayOnline = useCallback((displayId: string, lastSeenAt: string | null): boolean => {
+    // Prefer presence-based status (instant)
+    if (onlineDisplayIds.has(displayId)) {
+      return true;
+    }
+    // Fall back to lastSeenAt for displays that haven't connected with presence yet
+    return isDisplayOnline(lastSeenAt);
+  }, [onlineDisplayIds]);
+
   return {
     displays: displaysQuery.data ?? [],
     isLoading: displaysQuery.isLoading,
     error: displaysQuery.error,
     refetch: displaysQuery.refetch,
     removeDisplay,
+    onlineDisplayIds,
+    checkDisplayOnline,
   };
 }

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useDisplays, isDisplayOnline, useAuth } from '@mobileworship/shared';
+import { useDisplays, useAuth } from '@mobileworship/shared';
 import { AddDisplayModal } from '../components/AddDisplayModal';
 
 function formatLastSeen(lastSeenAt: string | null): string {
@@ -23,19 +23,10 @@ function formatLastSeen(lastSeenAt: string | null): string {
 
 export function DisplaysPage() {
   const { t } = useTranslation();
-  const { displays, isLoading } = useDisplays();
+  const { displays, isLoading, checkDisplayOnline } = useDisplays();
   const { can } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [, setTick] = useState(0);
-
-  // Re-evaluate online status every 15 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTick(t => t + 1);
-    }, 15000);
-    return () => clearInterval(interval);
-  }, []);
 
   if (isLoading) {
     return <div className="text-gray-500">{t('common.loading')}</div>;
@@ -92,7 +83,7 @@ export function DisplaysPage() {
           {/* Display List */}
           <div className="space-y-2">
             {filteredDisplays.map((display) => {
-              const online = isDisplayOnline(display.lastSeenAt);
+              const online = checkDisplayOnline(display.id, display.lastSeenAt);
               return (
                 <Link
                   key={display.id}

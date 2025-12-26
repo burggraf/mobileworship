@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useDisplays, isDisplayOnline } from '@mobileworship/shared';
+import { useDisplays } from '@mobileworship/shared';
 import type { DisplaysStackParamList } from '../../navigation/DisplaysNavigator';
 
 type NavigationProp = NativeStackNavigationProp<DisplaysStackParamList>;
@@ -34,7 +34,7 @@ function formatLastSeen(lastSeenAt: string | null): string {
 
 export function DisplaysListScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { displays, isLoading, refetch, removeDisplay } = useDisplays();
+  const { displays, isLoading, refetch, removeDisplay, checkDisplayOnline } = useDisplays();
 
   const handleRemove = (displayId: string, displayName: string) => {
     Alert.alert(
@@ -89,7 +89,7 @@ export function DisplaysListScreen() {
           <RefreshControl refreshing={isLoading} onRefresh={refetch} />
         }
         renderItem={({ item }) => {
-          const online = isDisplayOnline(item.lastSeenAt);
+          const online = checkDisplayOnline(item.id, item.lastSeenAt);
           return (
             <TouchableOpacity
               className="flex-row items-center p-4 border-b border-gray-200 dark:border-gray-700"

@@ -89,7 +89,7 @@ export function DisplayScreen() {
   }, []);
 
   const handleExit = useCallback(async () => {
-    await realtimeService.disconnect(true); // Send offline signal on explicit exit
+    await realtimeService.disconnect();
     BackHandler.exitApp();
   }, []);
 
@@ -127,7 +127,14 @@ export function DisplayScreen() {
   useEffect(() => {
     if (appState.screen !== 'ready' && appState.screen !== 'display') return;
 
-    realtimeService.connect(appState.displayId, handleCommand, undefined, handleRemoved);
+    realtimeService.connect(
+      appState.displayId,
+      appState.churchId,
+      appState.name,
+      handleCommand,
+      undefined,
+      handleRemoved
+    );
     setIsConnected(true);
 
     return () => {

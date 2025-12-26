@@ -84,3 +84,4 @@ export type HostStatus =
 
 // Realtime channel names
 export const getDisplayChannel = (displayId: string) => `display:${displayId}`;
+export const getPresenceChannel = (churchId: string) => `church:${churchId}:presence`;

@@ -14,7 +14,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
-import { useDisplay, isDisplayOnline } from '@mobileworship/shared';
+import { useDisplay, useDisplays } from '@mobileworship/shared';
 import type { FontSize, TextPosition, FontFamily } from '@mobileworship/shared';
 import type { DisplaysStackParamList } from '../../navigation/DisplaysNavigator';
 
@@ -70,6 +70,7 @@ export function DisplayDetailScreen() {
   const { displayId } = route.params;
   const { display, isLoading, updateSettings, updateName, remove, testConnection } =
     useDisplay(displayId);
+  const { checkDisplayOnline } = useDisplays();
 
   const [isTesting, setIsTesting] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -88,7 +89,7 @@ export function DisplayDetailScreen() {
     );
   }
 
-  const online = isDisplayOnline(display.lastSeenAt);
+  const online = checkDisplayOnline(display.id, display.lastSeenAt);
 
   const handleTestConnection = async () => {
     setIsTesting(true);

@@ -1,6 +1,6 @@
 import { createClient, RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
 import type { ClientCommand, HostState, HostStatus } from '../types';
-import { getDisplayChannel } from '../types';
+import { getDisplayChannel, getPresenceChannel } from '../types';
 import { Config } from '../config';
 
 type CommandHandler = (command: ClientCommand) => void;
@@ -9,9 +9,10 @@ type RemovedHandler = () => void;
 
 export class RealtimeService {
   private supabase: SupabaseClient | null = null;
-  private channel: RealtimeChannel | null = null;
+  private commandChannel: RealtimeChannel | null = null;
+  private presenceChannel: RealtimeChannel | null = null;
   private displayId: string | null = null;
-  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+  private displayName: string | null = null;
 
   private getSupabase(): SupabaseClient {
     if (!this.supabase) {
@@ -25,22 +26,27 @@ export class RealtimeService {
 
   async connect(
     displayId: string,
+    churchId: string,
+    displayName: string,
     onCommand: CommandHandler,
     onClaim?: ClaimHandler,
     onRemoved?: RemovedHandler
   ): Promise<void> {
     this.displayId = displayId;
+    this.displayName = displayName;
 
     const supabase = this.getSupabase();
-    this.channel = supabase.channel(getDisplayChannel(displayId));
 
-    this.channel.on('broadcast', { event: 'command' }, ({ payload }) => {
+    // Command channel for receiving commands and broadcasting state
+    this.commandChannel = supabase.channel(getDisplayChannel(displayId));
+
+    this.commandChannel.on('broadcast', { event: 'command' }, ({ payload }) => {
       onCommand(payload as ClientCommand);
     });
 
     // Respond to ping requests for connection testing
-    this.channel.on('broadcast', { event: 'ping' }, () => {
-      this.channel?.send({
+    this.commandChannel.on('broadcast', { event: 'ping' }, () => {
+      this.commandChannel?.send({
         type: 'broadcast',
         event: 'pong',
         payload: { timestamp: Date.now() },
@@ -48,7 +54,7 @@ export class RealtimeService {
     });
 
     if (onClaim) {
-      this.channel.on(
+      this.commandChannel.on(
         'postgres_changes',
         {
           event: 'UPDATE',
@@ -69,7 +75,7 @@ export class RealtimeService {
     if (onRemoved) {
       // Note: DELETE events cannot be filtered in Supabase Realtime
       // We must listen to all deletes and check the ID in the callback
-      this.channel.on(
+      this.commandChannel.on(
         'postgres_changes',
         {
           event: 'DELETE',
@@ -85,14 +91,28 @@ export class RealtimeService {
       );
     }
 
-    await this.channel.subscribe();
+    await this.commandChannel.subscribe();
 
-    // Send immediate heartbeat on connect
-    await this.sendHeartbeat();
-    this.startHeartbeat();
+    // Presence channel for online/offline status (only if we have a churchId)
+    if (churchId) {
+      this.presenceChannel = supabase.channel(getPresenceChannel(churchId));
+
+      await this.presenceChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await this.presenceChannel?.track({
+            displayId,
+            name: displayName,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+      // Update last_seen_at once on connect for historical purposes
+      await this.updateLastSeen();
+    }
   }
 
-  private async sendHeartbeat(): Promise<void> {
+  private async updateLastSeen(): Promise<void> {
     if (this.displayId) {
       try {
         const supabase = this.getSupabase();
@@ -101,14 +121,14 @@ export class RealtimeService {
           .update({ last_seen_at: new Date().toISOString() })
           .eq('id', this.displayId);
       } catch (error) {
-        console.error('Heartbeat failed:', error);
+        console.error('Failed to update last_seen_at:', error);
       }
     }
   }
 
   broadcastState(state: HostState): void {
-    if (this.channel) {
-      this.channel.send({
+    if (this.commandChannel) {
+      this.commandChannel.send({
         type: 'broadcast',
         event: 'state',
         payload: state,
@@ -117,8 +137,8 @@ export class RealtimeService {
   }
 
   broadcastStatus(status: HostStatus): void {
-    if (this.channel) {
-      this.channel.send({
+    if (this.commandChannel) {
+      this.commandChannel.send({
         type: 'broadcast',
         event: 'status',
         payload: status,
@@ -126,38 +146,21 @@ export class RealtimeService {
     }
   }
 
-  private startHeartbeat(): void {
-    this.heartbeatInterval = setInterval(() => {
-      this.sendHeartbeat();
-    }, 30000);
-  }
-
-  async disconnect(sendOfflineSignal: boolean = false): Promise<void> {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
+  async disconnect(): Promise<void> {
+    // Presence is automatically cleaned up when channel is unsubscribed
+    // Supabase detects the disconnect and removes the presence state
+    if (this.presenceChannel) {
+      await this.presenceChannel.unsubscribe();
+      this.presenceChannel = null;
     }
 
-    // Only mark as offline when explicitly requested (e.g., user exits app)
-    if (sendOfflineSignal && this.displayId) {
-      try {
-        const supabase = this.getSupabase();
-        // Set to 2 minutes ago so isDisplayOnline returns false immediately
-        const offlineTime = new Date(Date.now() - 120000).toISOString();
-        await supabase
-          .from('displays')
-          .update({ last_seen_at: offlineTime })
-          .eq('id', this.displayId);
-      } catch (error) {
-        console.error('Failed to mark offline:', error);
-      }
+    if (this.commandChannel) {
+      await this.commandChannel.unsubscribe();
+      this.commandChannel = null;
     }
 
-    if (this.channel) {
-      this.channel.unsubscribe();
-      this.channel = null;
-    }
     this.displayId = null;
+    this.displayName = null;
   }
 }
 
