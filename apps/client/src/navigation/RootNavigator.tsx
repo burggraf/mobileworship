@@ -13,7 +13,7 @@ import { DisplaysNavigator } from './DisplaysNavigator';
 export type RootStackParamList = {
   Login: undefined;
   Main: undefined;
-  Control: { eventId: string };
+  Control: { eventId: string; authToken?: string };
 };
 
 export type MainTabParamList = {
