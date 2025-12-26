@@ -3,11 +3,19 @@ import type { DisplaySettings } from '@mobileworship/shared';
 // Transition types
 export type TransitionType = 'cut' | 'fade' | 'slide';
 
+// Slide content for display
+export interface SlideContent {
+  label?: string;
+  lines: string[];
+  backgroundUrl?: string;
+}
+
 // Client → Host commands
 // All commands include commandId for deduplication across local/remote channels
 export type ClientCommand =
   | { type: 'LOAD_EVENT'; eventId: string; commandId: string }
   | { type: 'UNLOAD_EVENT'; commandId: string }
+  | { type: 'SET_SLIDE'; slide: SlideContent; commandId: string }
   | { type: 'GOTO_SLIDE'; slideIndex: number; commandId: string }
   | { type: 'GOTO_SECTION'; sectionIndex: number; commandId: string }
   | { type: 'GOTO_ITEM'; itemIndex: number; commandId: string }

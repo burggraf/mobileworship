@@ -48,20 +48,21 @@ export interface SlideContent {
   backgroundUrl?: string;
 }
 
+// All commands include optional commandId for deduplication across local/remote channels
 export type ClientCommand =
-  | { type: 'LOAD_EVENT'; eventId: string }
-  | { type: 'UNLOAD_EVENT' }
-  | { type: 'SET_SLIDE'; slide: SlideContent }
-  | { type: 'GOTO_SLIDE'; slideIndex: number }
-  | { type: 'GOTO_SECTION'; sectionIndex: number }
-  | { type: 'GOTO_ITEM'; itemIndex: number }
-  | { type: 'NEXT_SLIDE' }
-  | { type: 'PREV_SLIDE' }
-  | { type: 'BLANK_SCREEN' }
-  | { type: 'SHOW_LOGO' }
-  | { type: 'UNBLANK' }
-  | { type: 'SET_TRANSITION'; transition: TransitionType }
-  | { type: 'UPDATE_SETTINGS'; settings: Partial<DisplaySettings> };
+  | { type: 'LOAD_EVENT'; eventId: string; commandId?: string }
+  | { type: 'UNLOAD_EVENT'; commandId?: string }
+  | { type: 'SET_SLIDE'; slide: SlideContent; commandId?: string }
+  | { type: 'GOTO_SLIDE'; slideIndex: number; commandId?: string }
+  | { type: 'GOTO_SECTION'; sectionIndex: number; commandId?: string }
+  | { type: 'GOTO_ITEM'; itemIndex: number; commandId?: string }
+  | { type: 'NEXT_SLIDE'; commandId?: string }
+  | { type: 'PREV_SLIDE'; commandId?: string }
+  | { type: 'BLANK_SCREEN'; commandId?: string }
+  | { type: 'SHOW_LOGO'; commandId?: string }
+  | { type: 'UNBLANK'; commandId?: string }
+  | { type: 'SET_TRANSITION'; transition: TransitionType; commandId?: string }
+  | { type: 'UPDATE_SETTINGS'; settings: Partial<DisplaySettings>; commandId?: string };
 
 export interface HostState {
   displayId: string;
