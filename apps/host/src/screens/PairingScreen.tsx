@@ -45,10 +45,15 @@ export function PairingScreen({ onPaired, existingDisplayId }: Props) {
   useEffect(() => {
     if (!displayId) return;
 
+    // During pairing, we don't have churchId yet, so pass empty strings
+    // The onClaim callback will be triggered when the display is claimed
     realtimeService.connect(
       displayId,
-      () => {},
+      '', // No churchId during pairing (presence not needed)
+      '', // No displayName during pairing
+      () => {}, // onCommand - not used during pairing
       async (name, churchId) => {
+        // Display was claimed - save pairing and notify parent
         await pairingService.savePairing(displayId);
         onPaired(displayId, name, churchId);
       }
