@@ -132,14 +132,14 @@ export class RealtimeService {
     }, 30000);
   }
 
-  async disconnect(): Promise<void> {
+  async disconnect(sendOfflineSignal: boolean = false): Promise<void> {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     }
 
-    // Mark as offline immediately by setting last_seen_at to old timestamp
-    if (this.displayId) {
+    // Only mark as offline when explicitly requested (e.g., user exits app)
+    if (sendOfflineSignal && this.displayId) {
       try {
         const supabase = this.getSupabase();
         // Set to 2 minutes ago so isDisplayOnline returns false immediately

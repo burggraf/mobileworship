@@ -82,7 +82,26 @@ export function useDisplays() {
           filter: `church_id=eq.${user.churchId}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['displays', user.churchId] });
+          queryClient.refetchQueries({ queryKey: ['displays', user.churchId] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'displays',
+          // Also listen to all UPDATEs to catch newly claimed displays
+          // (when church_id changes from null to a value)
+        },
+        (payload) => {
+          const newRow = payload.new as { church_id?: string };
+          if (newRow.church_id === user.churchId) {
+            // Small delay to ensure write is visible for read
+            setTimeout(() => {
+              queryClient.refetchQueries({ queryKey: ['displays', user.churchId] });
+            }, 100);
+          }
         }
       )
       .on(
@@ -94,7 +113,7 @@ export function useDisplays() {
           filter: `church_id=eq.${user.churchId}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['displays', user.churchId] });
+          queryClient.refetchQueries({ queryKey: ['displays', user.churchId] });
         }
       )
       .on(
@@ -106,7 +125,7 @@ export function useDisplays() {
           // Note: DELETE events cannot be filtered - must listen to all deletes
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['displays', user.churchId] });
+          queryClient.refetchQueries({ queryKey: ['displays', user.churchId] });
         }
       )
       .subscribe();

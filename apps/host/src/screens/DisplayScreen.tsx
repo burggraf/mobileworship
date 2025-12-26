@@ -89,7 +89,7 @@ export function DisplayScreen() {
   }, []);
 
   const handleExit = useCallback(async () => {
-    await realtimeService.disconnect();
+    await realtimeService.disconnect(true); // Send offline signal on explicit exit
     BackHandler.exitApp();
   }, []);
 
