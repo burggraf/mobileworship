@@ -7,8 +7,14 @@ import { SlideRenderer } from '../components/SlideRenderer';
 import { MenuModal } from '../components/MenuModal';
 import { pairingService } from '../services/PairingService';
 import { realtimeService } from '../services/RealtimeService';
+import { HostServer } from '../services/HostServer';
+import { mdnsService } from '../services/MDNSService';
+import { localIPReporter } from '../services/LocalIPReporter';
+import { CommandDeduplicator } from '../services/CommandDeduplicator';
 import { PairingScreen } from './PairingScreen';
 import { ReadyScreen } from './ReadyScreen';
+
+const LOCAL_PORT = 8765;
 
 const { width, height } = Dimensions.get('window');
 
@@ -66,6 +72,8 @@ export function DisplayScreen() {
   const [currentSlide, setCurrentSlide] = useState<SlideContent | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [localServer, setLocalServer] = useState<HostServer | null>(null);
+  const commandDeduplicator = useRef(new CommandDeduplicator()).current;
 
   // Listen for native key events to open menu
   useEffect(() => {
@@ -89,12 +97,19 @@ export function DisplayScreen() {
   }, []);
 
   const handleExit = useCallback(async () => {
+    // Stop local services
+    if (localServer) {
+      localServer.stop();
+    }
+    await mdnsService.unpublish();
+    await localIPReporter.stop();
+
     await realtimeService.disconnect();
     // Small delay to ensure presence untrack message is sent before app exits
     setTimeout(() => {
       BackHandler.exitApp();
     }, 100);
-  }, []);
+  }, [localServer]);
 
   const handleUnregister = useCallback(async () => {
     if (appState.screen === 'ready' || appState.screen === 'display') {
@@ -175,13 +190,68 @@ export function DisplayScreen() {
     return () => subscription.remove();
   }, [appState.screen === 'ready' || appState.screen === 'display' ? appState.displayId : null, handleCommand, handleRemoved]);
 
+  // Start local network services (TCP server, mDNS, IP reporter) when paired
+  useEffect(() => {
+    if (appState.screen !== 'ready' && appState.screen !== 'display') return;
+
+    const server = new HostServer({
+      port: LOCAL_PORT,
+      displayId: appState.displayId,
+      churchId: appState.churchId,
+      onCommand: handleCommand,
+      onClientConnect: () => console.log('Local client connected'),
+      onClientDisconnect: () => console.log('Local client disconnected'),
+    });
+
+    async function startLocalServices() {
+      try {
+        await server.start();
+        setLocalServer(server);
+
+        // Start mDNS advertisement
+        await mdnsService.publish({
+          displayId: appState.displayId,
+          churchId: appState.churchId,
+          displayName: appState.name,
+          port: LOCAL_PORT,
+        });
+
+        // Start IP reporting to database
+        await localIPReporter.start(appState.displayId, LOCAL_PORT);
+
+        console.log('Local services started successfully');
+      } catch (error) {
+        console.error('Failed to start local services:', error);
+      }
+    }
+
+    startLocalServices();
+
+    return () => {
+      server.stop();
+      mdnsService.unpublish();
+      localIPReporter.stop();
+      setLocalServer(null);
+    };
+  }, [appState.screen === 'ready' || appState.screen === 'display' ? appState.displayId : null, handleCommand]);
+
+  // Broadcast state changes to all clients (remote via Realtime, local via TCP)
   useEffect(() => {
     if (isConnected) {
       realtimeService.broadcastState(hostState);
     }
-  }, [hostState, isConnected]);
+    if (localServer) {
+      localServer.setState(hostState);
+    }
+  }, [hostState, isConnected, localServer]);
 
   const handleCommand = useCallback((command: ClientCommand) => {
+    // Deduplicate commands that may arrive via both local and remote channels
+    if (command.commandId && commandDeduplicator.isDuplicate(command.commandId)) {
+      console.log('Skipping duplicate command:', command.commandId);
+      return;
+    }
+
     console.log('Received command:', command.type);
     switch (command.type) {
       case 'LOAD_EVENT':
