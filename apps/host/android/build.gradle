@@ -26,11 +26,29 @@ subprojects {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
                 }
+                // Fix for older libraries missing namespace declaration
+                if (namespace == null) {
+                    namespace = project.group.toString()
+                }
             }
         }
         project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
             kotlinOptions {
                 jvmTarget = "17"
+            }
+        }
+    }
+}
+
+// Fix namespace for specific libraries that don't have it
+subprojects { subproject ->
+    subproject.afterEvaluate {
+        if (subproject.name == "react-native-network-info") {
+            subproject.android.namespace = "com.pusherman.networkinfo"
+        }
+        if (subproject.name == "react-native-tcp-socket") {
+            if (subproject.android.namespace == null) {
+                subproject.android.namespace = "com.asterinet.react.tcpsocket"
             }
         }
     }

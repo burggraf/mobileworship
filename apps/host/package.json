@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "postinstall": "bash scripts/fix-android-manifests.sh",
     "android": "dotenv -- react-native run-android",
     "android:release": "dotenv -- bash -c 'cd android && ./gradlew assembleRelease'",
     "android:install": "adb install android/app/build/outputs/apk/release/app-release.apk",
