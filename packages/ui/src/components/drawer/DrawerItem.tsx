@@ -2,13 +2,14 @@
 
 import React from 'react';
 import { Pressable, Text } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import { useDrawer } from './DrawerContext';
 import { brandColors } from '../../theme';
 
 interface DrawerItemProps {
   route: string;
   label: string;
-  icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>;
+  icon: LucideIcon;
 }
 
 export function DrawerItem({ route, label, icon: Icon }: DrawerItemProps) {

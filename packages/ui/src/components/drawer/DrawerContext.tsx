@@ -1,7 +1,9 @@
 // packages/ui/src/components/drawer/DrawerContext.tsx
 
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useDrawerState, DrawerState } from '../../hooks/useDrawerState';
+import React, { createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
+import { useDrawerState } from '../../hooks/useDrawerState';
+import type { DrawerState } from '../../hooks/useDrawerState';
 
 interface DrawerContextValue {
   state: DrawerState;

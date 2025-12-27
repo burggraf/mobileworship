@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import {
   Music,
   Calendar,
@@ -31,7 +32,7 @@ interface DrawerContentProps {
   items?: Array<{
     route: string;
     label: string;
-    icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>;
+    icon: LucideIcon;
   }>;
   /** Translation function for labels */
   t?: (key: string) => string;
