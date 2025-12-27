@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 import { View, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Menu } from 'lucide-react-native';
 import { DrawerProvider, DrawerContent, useDrawer } from '../components/drawer';
-import { drawerConfig, brandColors } from '../theme';
 
 interface AppLayoutProps {
   children: ReactNode;
