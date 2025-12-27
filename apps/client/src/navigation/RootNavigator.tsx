@@ -1,6 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useAuth } from '@mobileworship/shared';
 
 import { LoginScreen } from '../screens/LoginScreen';
@@ -9,6 +9,7 @@ import { EventsScreen } from '../screens/EventsScreen';
 import { ControlScreen } from '../screens/ControlScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { DisplaysNavigator } from './DisplaysNavigator';
+import { NativeDrawerContent } from './NativeDrawerContent';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -16,7 +17,7 @@ export type RootStackParamList = {
   Control: { eventId: string; authToken?: string };
 };
 
-export type MainTabParamList = {
+export type DrawerParamList = {
   Songs: undefined;
   Events: undefined;
   Displays: undefined;
@@ -24,20 +25,23 @@ export type MainTabParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const Drawer = createDrawerNavigator<DrawerParamList>();
 
-function MainTabs() {
+function MainDrawer() {
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Songs" component={SongsScreen} />
-      <Tab.Screen name="Events" component={EventsScreen} />
-      <Tab.Screen
-        name="Displays"
-        component={DisplaysNavigator}
-        options={{ headerShown: false }}
-      />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
-    </Tab.Navigator>
+    <Drawer.Navigator
+      drawerContent={(props) => <NativeDrawerContent {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerType: 'slide',
+        drawerStyle: { width: 256 },
+      }}
+    >
+      <Drawer.Screen name="Songs" component={SongsScreen} />
+      <Drawer.Screen name="Events" component={EventsScreen} />
+      <Drawer.Screen name="Displays" component={DisplaysNavigator} />
+      <Drawer.Screen name="Settings" component={SettingsScreen} />
+    </Drawer.Navigator>
   );
 }
 
@@ -52,7 +56,7 @@ export function RootNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
         <>
-          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="Main" component={MainDrawer} />
           <Stack.Screen
             name="Control"
             component={ControlScreen}
