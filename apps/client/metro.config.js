@@ -11,7 +11,10 @@ const config = {
       path.resolve(projectRoot, 'node_modules'),
       path.resolve(monorepoRoot, 'node_modules'),
     ],
-    disableHierarchicalLookup: true,
+    // Don't disable hierarchical lookup - pnpm needs it
+    disableHierarchicalLookup: false,
+    // Unstable feature for better pnpm support
+    unstable_enableSymlinks: true,
   },
 };
 

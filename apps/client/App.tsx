@@ -4,10 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SupabaseProvider, AuthProvider } from '@mobileworship/shared';
 import { RootNavigator } from './src/navigation/RootNavigator';
-import Config from 'react-native-config';
-
-const supabaseUrl = Config.SUPABASE_URL ?? '';
-const supabaseAnonKey = Config.SUPABASE_ANON_KEY ?? '';
+import { Config } from './src/config';
 
 export default function App() {
   const [queryClient] = useState(
@@ -23,7 +20,7 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SupabaseProvider supabaseUrl={supabaseUrl} supabaseAnonKey={supabaseAnonKey}>
+      <SupabaseProvider supabaseUrl={Config.SUPABASE_URL} supabaseAnonKey={Config.SUPABASE_ANON_KEY}>
         <AuthProvider>
           <SafeAreaProvider>
             <NavigationContainer>

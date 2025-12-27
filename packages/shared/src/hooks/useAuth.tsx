@@ -53,7 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (event === 'SIGNED_IN' && window.location.href.includes('#')) {
+      // Clean up URL hash on web after OAuth sign-in
+      if (event === 'SIGNED_IN' && typeof window !== 'undefined' && window.location?.href?.includes('#')) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
 
@@ -136,20 +137,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithGoogle() {
+    const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: origin ? `${origin}/dashboard` : undefined,
       },
     });
     if (error) throw error;
   }
 
   async function signInWithMagicLink(email: string) {
+    const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: origin ? `${origin}/dashboard` : undefined,
       },
     });
     if (error) throw error;
@@ -157,13 +160,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signUp(email: string, password: string, name: string, churchName: string) {
     isSigningUp.current = true;
+    const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: origin ? `${origin}/dashboard` : undefined,
           data: { current_church_id: null }, // Will be set by create_church_and_user
         },
       });
@@ -195,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Sign up for users accepting an invitation (no church created)
   async function signUpForInvitation(email: string, password: string, name: string, redirectUrl: string) {
     isSigningUp.current = true;
+    const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -202,7 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           // Redirect to the accept-invite page after email confirmation
-          emailRedirectTo: `${window.location.origin}${redirectUrl}`,
+          emailRedirectTo: origin ? `${origin}${redirectUrl}` : undefined,
           data: {
             name, // Store name in user metadata for later
             current_church_id: null,
@@ -226,8 +231,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function resetPasswordForEmail(email: string) {
+    // Use window.location if available (web), otherwise use empty string (native handles deep links separately)
+    const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: origin ? `${origin}/reset-password` : undefined,
     });
     if (error) throw error;
   }
