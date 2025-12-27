@@ -1,6 +1,6 @@
 // packages/ui/src/provider/GluestackProvider.tsx
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
 import { GluestackUIProvider } from '@gluestack-ui/themed';

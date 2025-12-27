@@ -1,6 +1,6 @@
 // packages/ui/src/components/drawer/DrawerContent.tsx
 
-import React from 'react';
+
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 import {

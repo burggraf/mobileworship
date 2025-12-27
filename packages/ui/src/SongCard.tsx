@@ -13,15 +13,7 @@ export interface SongCardProps {
 /**
  * Card component for displaying a song in the library
  */
-export function SongCard({
-  title,
-  author,
-  lastUsed,
-  tags,
-  onPress,
-  className,
-  style,
-}: SongCardProps): ReactNode {
+export function SongCard(_props: SongCardProps): ReactNode {
   // Placeholder - implemented per platform
   return null;
 }

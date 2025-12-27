@@ -1,6 +1,6 @@
 // packages/ui/src/layouts/AppLayout.tsx
 
-import React from 'react';
+
 import type { ReactNode } from 'react';
 import { View, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Menu } from 'lucide-react-native';

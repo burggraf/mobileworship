@@ -6,18 +6,21 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
-            'react-native': 'react-native-web',
+            'react-native': path.resolve(__dirname, './node_modules/react-native-web'),
         },
-        extensions: ['.web.tsx', '.web.ts', '.web.js', '.tsx', '.ts', '.js'],
+        extensions: ['.web.tsx', '.web.ts', '.web.jsx', '.web.js', '.tsx', '.ts', '.jsx', '.js'],
     },
     define: {
         __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
     },
     optimizeDeps: {
-        include: ['react-native-web'],
+        include: ['react-native-web', 'react-native-svg'],
     },
     build: {
         outDir: 'dist',
         sourcemap: true,
+        commonjsOptions: {
+            transformMixedEsModules: true,
+        },
     },
 });

@@ -1,6 +1,6 @@
 // packages/ui/src/components/drawer/DrawerItem.tsx
 
-import React from 'react';
+
 import { Pressable, Text } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 import { useDrawer } from './DrawerContext';

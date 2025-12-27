@@ -2,6 +2,13 @@
 
 import { Platform } from 'react-native';
 
+// Web localStorage type (available when running in browser via react-native-web)
+declare const localStorage: {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+} | undefined;
+
 // Lazy import AsyncStorage only on native
 let AsyncStorage: typeof import('@react-native-async-storage/async-storage').default | null = null;
 
@@ -17,7 +24,7 @@ export const storage = {
   get: async (key: string): Promise<string | null> => {
     if (Platform.OS === 'web') {
       try {
-        return localStorage.getItem(key);
+        return localStorage?.getItem(key) ?? null;
       } catch {
         return null;
       }
@@ -29,7 +36,7 @@ export const storage = {
   set: async (key: string, value: string): Promise<void> => {
     if (Platform.OS === 'web') {
       try {
-        localStorage.setItem(key, value);
+        localStorage?.setItem(key, value);
       } catch {
         // localStorage not available (SSR, private browsing)
       }
@@ -42,7 +49,7 @@ export const storage = {
   remove: async (key: string): Promise<void> => {
     if (Platform.OS === 'web') {
       try {
-        localStorage.removeItem(key);
+        localStorage?.removeItem(key);
       } catch {
         // localStorage not available
       }

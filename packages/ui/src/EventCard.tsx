@@ -13,15 +13,7 @@ export interface EventCardProps {
 /**
  * Card component for displaying an event/service
  */
-export function EventCard({
-  title,
-  scheduledAt,
-  itemCount,
-  status,
-  onPress,
-  className,
-  style,
-}: EventCardProps): ReactNode {
+export function EventCard(_props: EventCardProps): ReactNode {
   // Placeholder - implemented per platform
   return null;
 }
