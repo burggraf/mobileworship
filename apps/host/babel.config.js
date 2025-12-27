@@ -3,5 +3,6 @@ module.exports = {
   plugins: [
     'nativewind/babel',
     'transform-inline-environment-variables',
+    'react-native-reanimated/plugin', // Must be last
   ],
 };

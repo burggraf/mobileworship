@@ -16,12 +16,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@mobileworship/ui": "workspace:*",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-navigation/drawer": "^6.6.0",
     "@react-navigation/native": "^6.1.0",
     "@react-navigation/native-stack": "^6.9.0",
     "@supabase/supabase-js": "^2.43.0",
     "@tanstack/react-query": "^5.32.0",
+    "lucide-react-native": "^0.344.0",
     "nativewind": "^2.0.0",
     "react": "18.2.0",
     "react-native": "0.74.0",
