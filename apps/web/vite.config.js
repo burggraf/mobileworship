@@ -6,7 +6,15 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
+            'react-native': 'react-native-web',
         },
+        extensions: ['.web.tsx', '.web.ts', '.web.js', '.tsx', '.ts', '.js'],
+    },
+    define: {
+        __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
+    },
+    optimizeDeps: {
+        include: ['react-native-web'],
     },
     build: {
         outDir: 'dist',
