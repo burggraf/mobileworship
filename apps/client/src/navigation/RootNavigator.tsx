@@ -8,6 +8,7 @@ import { SongsScreen } from '../screens/SongsScreen';
 import { EventsScreen } from '../screens/EventsScreen';
 import { ControlScreen } from '../screens/ControlScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { MediaScreen } from '../screens/MediaScreen';
 import { DisplaysNavigator } from './DisplaysNavigator';
 import { NativeDrawerContent } from './NativeDrawerContent';
 
@@ -21,6 +22,7 @@ export type DrawerParamList = {
   Songs: undefined;
   Events: undefined;
   Displays: undefined;
+  Media: undefined;
   Settings: undefined;
 };
 
@@ -40,6 +42,7 @@ function MainDrawer() {
       <Drawer.Screen name="Songs" component={SongsScreen} />
       <Drawer.Screen name="Events" component={EventsScreen} />
       <Drawer.Screen name="Displays" component={DisplaysNavigator} />
+      <Drawer.Screen name="Media" component={MediaScreen} />
       <Drawer.Screen name="Settings" component={SettingsScreen} />
     </Drawer.Navigator>
   );
