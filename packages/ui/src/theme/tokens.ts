@@ -52,3 +52,29 @@ export const storageKeys = {
   drawerCollapsed: 'mobileworship:drawer:collapsed',
   colorMode: 'mobileworship:colorMode',
 };
+
+/**
+ * Semantic Colors by Color Scheme
+ * ===============================
+ * Colors that change based on light/dark mode.
+ */
+export const semanticColors = {
+  light: {
+    background: '#ffffff',
+    backgroundSecondary: '#f9fafb',
+    border: '#e5e7eb',
+    text: '#374151',
+    textSecondary: '#6b7280',
+    textMuted: '#9ca3af',
+  },
+  dark: {
+    background: '#111827',
+    backgroundSecondary: '#1f2937',
+    border: '#374151',
+    text: '#f9fafb',
+    textSecondary: '#d1d5db',
+    textMuted: '#9ca3af',
+  },
+};
+
+export type ColorScheme = 'light' | 'dark';

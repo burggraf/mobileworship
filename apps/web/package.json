@@ -12,7 +12,8 @@
     "deploy": "wrangler pages deploy dist --project-name=mobileworship",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "postinstall": "bash scripts/patch-react-native-web.sh"
   },
   "dependencies": {
     "@mobileworship/protocol": "workspace:*",
@@ -22,10 +23,11 @@
     "@tanstack/react-query": "^5.32.0",
     "i18next": "^25.7.3",
     "i18next-browser-languagedetector": "^8.2.0",
+    "lucide-react": "^0.562.0",
+    "normalize-css-color": "^1.0.2",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-i18next": "^16.5.0",
-    "react-native-svg": "^15.2.0",
     "react-native-web": "^0.19.0",
     "react-router-dom": "^6.23.0"
   },

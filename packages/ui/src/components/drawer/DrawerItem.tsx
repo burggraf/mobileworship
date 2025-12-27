@@ -4,7 +4,7 @@
 import { Pressable, Text } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 import { useDrawer } from './DrawerContext';
-import { brandColors } from '../../theme';
+import { brandColors, semanticColors } from '../../theme';
 
 interface DrawerItemProps {
   route: string;
@@ -13,8 +13,9 @@ interface DrawerItemProps {
 }
 
 export function DrawerItem({ route, label, icon: Icon }: DrawerItemProps) {
-  const { activeRoute, onNavigate, isExpanded } = useDrawer();
+  const { activeRoute, onNavigate, isExpanded, colorScheme } = useDrawer();
   const isActive = activeRoute === route;
+  const colors = semanticColors[colorScheme];
 
   return (
     <Pressable
@@ -32,7 +33,7 @@ export function DrawerItem({ route, label, icon: Icon }: DrawerItemProps) {
     >
       <Icon
         size={22}
-        color={isActive ? brandColors.primary600 : '#6b7280'}
+        color={isActive ? brandColors.primary600 : colors.textSecondary}
         strokeWidth={isActive ? 2.5 : 2}
       />
       {isExpanded && (
@@ -41,7 +42,7 @@ export function DrawerItem({ route, label, icon: Icon }: DrawerItemProps) {
             marginLeft: 12,
             fontSize: 15,
             fontWeight: isActive ? '600' : '400',
-            color: isActive ? brandColors.primary600 : '#374151',
+            color: isActive ? brandColors.primary600 : colors.text,
           }}
         >
           {label}

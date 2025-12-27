@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@mobileworship/shared';
 import { AppLayout } from '@mobileworship/ui';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface WebDrawerLayoutProps {
   children: ReactNode;
@@ -33,6 +34,7 @@ export function WebDrawerLayout({ children }: WebDrawerLayoutProps) {
   const location = useLocation();
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
+  const { theme } = useTheme();
 
   // Determine active route from current path
   const activeRoute = Object.entries(routeMap).find(([path]) =>
@@ -53,6 +55,7 @@ export function WebDrawerLayout({ children }: WebDrawerLayoutProps) {
       user={user ? { name: user.name, email: user.email } : null}
       onSignOut={signOut}
       t={t}
+      colorScheme={theme}
     >
       {children}
     </AppLayout>

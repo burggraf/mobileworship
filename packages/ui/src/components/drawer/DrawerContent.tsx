@@ -1,7 +1,7 @@
 // packages/ui/src/components/drawer/DrawerContent.tsx
 
 
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 import {
   Music,
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react-native';
 import { useDrawer } from './DrawerContext';
 import { DrawerItem } from './DrawerItem';
-import { brandColors } from '../../theme';
+import { brandColors, semanticColors } from '../../theme';
 
 interface DrawerContentProps {
   /** App name to display in header */
@@ -52,8 +52,9 @@ export function DrawerContent({
   items,
   t = (key) => key,
 }: DrawerContentProps) {
-  const { isExpanded, toggle, width, state } = useDrawer();
+  const { isExpanded, toggle, width, state, colorScheme } = useDrawer();
   const navItems = items ?? defaultItems;
+  const colors = semanticColors[colorScheme];
 
   if (state === 'hidden') {
     return null;
@@ -64,9 +65,9 @@ export function DrawerContent({
       style={{
         width,
         height: '100%',
-        backgroundColor: '#ffffff',
+        backgroundColor: colors.background,
         borderRightWidth: 1,
-        borderRightColor: '#e5e7eb',
+        borderRightColor: colors.border,
         flexDirection: 'column',
       }}
     >
@@ -78,7 +79,7 @@ export function DrawerContent({
           justifyContent: isExpanded ? 'space-between' : 'center',
           padding: 16,
           borderBottomWidth: 1,
-          borderBottomColor: '#e5e7eb',
+          borderBottomColor: colors.border,
           minHeight: 64,
         }}
       >
@@ -101,15 +102,15 @@ export function DrawerContent({
           }}
         >
           {isExpanded ? (
-            <ChevronLeft size={20} color="#6b7280" />
+            <ChevronLeft size={20} color={colors.textSecondary} />
           ) : (
-            <Menu size={20} color="#6b7280" />
+            <Menu size={20} color={colors.textSecondary} />
           )}
         </Pressable>
       </View>
 
       {/* Navigation Items */}
-      <ScrollView style={{ flex: 1, paddingTop: 8 }}>
+      <View style={{ flex: 1, paddingTop: 8, overflow: 'scroll' }}>
         {navItems.map((item) => (
           <DrawerItem
             key={item.route}
@@ -118,10 +119,10 @@ export function DrawerContent({
             icon={item.icon}
           />
         ))}
-      </ScrollView>
+      </View>
 
       {/* Footer */}
-      <View style={{ borderTopWidth: 1, borderTopColor: '#e5e7eb' }}>
+      <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
         {/* Settings */}
         <DrawerItem
           route="Settings"
@@ -154,18 +155,18 @@ export function DrawerContent({
               </View>
               {isExpanded && (
                 <View style={{ marginLeft: 12 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: colors.text }}>
                     {user.name}
                   </Text>
                   {user.email && (
-                    <Text style={{ fontSize: 12, color: '#6b7280' }}>{user.email}</Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary }}>{user.email}</Text>
                   )}
                 </View>
               )}
             </View>
             {isExpanded && onSignOut && (
               <Pressable onPress={onSignOut} style={{ padding: 8 }}>
-                <LogOut size={18} color="#6b7280" />
+                <LogOut size={18} color={colors.textSecondary} />
               </Pressable>
             )}
           </View>

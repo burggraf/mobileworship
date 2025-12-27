@@ -4,6 +4,7 @@ import React, { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { useDrawerState } from '../../hooks/useDrawerState';
 import type { DrawerState } from '../../hooks/useDrawerState';
+import type { ColorScheme } from '../../theme';
 
 interface DrawerContextValue {
   state: DrawerState;
@@ -18,6 +19,7 @@ interface DrawerContextValue {
   activeRoute: string;
   setActiveRoute: (route: string) => void;
   onNavigate: (route: string) => void;
+  colorScheme: ColorScheme;
 }
 
 const DrawerContext = createContext<DrawerContextValue | null>(null);
@@ -34,9 +36,15 @@ interface DrawerProviderProps {
   children: ReactNode;
   activeRoute: string;
   onNavigate: (route: string) => void;
+  colorScheme?: ColorScheme;
 }
 
-export function DrawerProvider({ children, activeRoute, onNavigate }: DrawerProviderProps) {
+export function DrawerProvider({
+  children,
+  activeRoute,
+  onNavigate,
+  colorScheme = 'light',
+}: DrawerProviderProps) {
   const drawerState = useDrawerState();
   const [currentRoute, setCurrentRoute] = React.useState(activeRoute);
 
@@ -60,6 +68,7 @@ export function DrawerProvider({ children, activeRoute, onNavigate }: DrawerProv
         activeRoute: currentRoute,
         setActiveRoute: setCurrentRoute,
         onNavigate: handleNavigate,
+        colorScheme,
       }}
     >
       {children}

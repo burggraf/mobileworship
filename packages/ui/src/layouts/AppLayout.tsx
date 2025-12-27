@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import { View, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Menu } from 'lucide-react-native';
 import { DrawerProvider, DrawerContent, useDrawer } from '../components/drawer';
+import { semanticColors } from '../theme';
+import type { ColorScheme } from '../theme';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -13,6 +15,7 @@ interface AppLayoutProps {
   user?: { name: string; email?: string } | null;
   onSignOut?: () => void;
   t?: (key: string) => string;
+  colorScheme?: ColorScheme;
 }
 
 function AppLayoutInner({
@@ -20,17 +23,18 @@ function AppLayoutInner({
   user,
   onSignOut,
   t,
-}: Omit<AppLayoutProps, 'activeRoute' | 'onNavigate'>) {
-  const { width, isMobile, isVisible, toggle, state } = useDrawer();
+}: Omit<AppLayoutProps, 'activeRoute' | 'onNavigate' | 'colorScheme'>) {
+  const { width, isMobile, isVisible, toggle, state, colorScheme } = useDrawer();
   const { width: screenWidth } = useWindowDimensions();
+  const colors = semanticColors[colorScheme];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}>
       {/* Mobile Header */}
       {isMobile && (
-        <View style={styles.mobileHeader}>
+        <View style={[styles.mobileHeader, { borderBottomColor: colors.border, backgroundColor: colors.background }]}>
           <Pressable onPress={toggle} style={styles.menuButton}>
-            <Menu size={24} color="#374151" />
+            <Menu size={24} color={colors.text} />
           </Pressable>
           <View style={styles.mobileTitle}>
             {/* Title handled by parent */}
@@ -68,7 +72,9 @@ function AppLayoutInner({
 
         {/* Main content */}
         <View style={[styles.content, { marginLeft: isMobile ? 0 : width }]}>
-          {children}
+          <View style={styles.contentInner}>
+            {children}
+          </View>
         </View>
       </View>
     </View>
@@ -82,9 +88,10 @@ export function AppLayout({
   user,
   onSignOut,
   t,
+  colorScheme = 'light',
 }: AppLayoutProps) {
   return (
-    <DrawerProvider activeRoute={activeRoute} onNavigate={onNavigate}>
+    <DrawerProvider activeRoute={activeRoute} onNavigate={onNavigate} colorScheme={colorScheme}>
       <AppLayoutInner user={user} onSignOut={onSignOut} t={t}>
         {children}
       </AppLayoutInner>
@@ -95,14 +102,13 @@ export function AppLayout({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    height: '100%',
   },
   mobileHeader: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
@@ -115,6 +121,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
+    height: '100%',
     flexDirection: 'row',
   },
   drawer: {
@@ -141,6 +148,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    overflow: 'hidden',
+    // @ts-expect-error - web-only overflow value
+    overflowY: 'auto',
+  },
+  contentInner: {
+    flex: 1,
+    padding: 24,
+    minHeight: '100%',
   },
 });

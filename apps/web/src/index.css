@@ -12,8 +12,12 @@
   --background: 17, 24, 39;
 }
 
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
 body {
   color: rgb(var(--foreground));
   background: rgb(var(--background));
-  min-height: 100vh;
 }

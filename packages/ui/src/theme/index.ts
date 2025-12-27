@@ -1,7 +1,8 @@
 // packages/ui/src/theme/index.ts
 
 import { createConfig } from '@gluestack-style/react';
-import { brandColors, drawerConfig, storageKeys } from './tokens';
+import { brandColors, drawerConfig, storageKeys, semanticColors } from './tokens';
+import type { ColorScheme } from './tokens';
 
 export const gluestackConfig = createConfig({
   aliases: {
@@ -62,5 +63,6 @@ export const gluestackConfig = createConfig({
   },
 });
 
-export { brandColors, drawerConfig, storageKeys };
+export { brandColors, drawerConfig, storageKeys, semanticColors };
+export type { ColorScheme };
 export type GluestackConfig = typeof gluestackConfig;
